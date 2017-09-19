@@ -19,7 +19,7 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-import {BezierCurve} from '../../src/nurbs'
+import {BezierCurve, BSplineCurve} from '../../src/nurbs'
 import {arr} from '@bluemath/common'
 import {Renderer} from './renderer'
 
@@ -35,6 +35,9 @@ export class GeometryAdapter {
     switch(data.type) {
     case 'BezierCurve':
       this.renderBezier(data.object);
+      break;
+    case 'BSplineCurve':
+      this.renderBSplineCurve(data.object);
       break;
     }
   }
@@ -84,6 +87,72 @@ export class GeometryAdapter {
         mode : 'markers',
         name:'Control Points'
       });
+    }
+    this.rndr.render2D(traces);
+  }
+
+  renderBSplineCurve(data) {
+    if(!data.knots) {
+      // Assume it's a bezier curve
+      data.knots = [];
+      for(let i=0; i<=data.degree; i++) {
+        data.knots.push(0);
+      }
+      for(let i=0; i<=data.degree; i++) {
+        data.knots.push(1);
+      }
+    }
+    let {degree, cpoints, knots} = data;
+    const RESOLUTION = 50;
+
+    let bcrv = new BSplineCurve(degree,
+      arr(cpoints), arr(knots),
+      data.weights ? arr(data.weights) : undefined);
+
+    let tess = bcrv.tessellate(RESOLUTION);
+    let traces = [];
+
+    if(bcrv.dimension === 2) {
+      traces.push({
+        x: Array.from(tess.getA(':',0).data),
+        y: Array.from(tess.getA(':',1).data),
+        xaxis : 'x1',
+        yaxis : 'y1',
+        type : 'scatter',
+        mode : 'lines',
+        name:'Curve'
+      });
+      traces.push({
+        x: Array.from(bcrv.cpoints.getA(':',0).data),
+        y: Array.from(bcrv.cpoints.getA(':',1).data),
+        xaxis : 'x1',
+        yaxis : 'y1',
+        type : 'scatter',
+        mode : 'markers',
+        name:'Control Points'
+      });
+    } else if(bcrv.dimension === 3) {
+      traces.push({
+        x: Array.from(tess.getA(':',0).data),
+        y: Array.from(tess.getA(':',1).data),
+        z: Array.from(tess.getA(':',2).data),
+        xaxis : 'x1',
+        yaxis : 'y1',
+        type : 'scatter3d',
+        mode : 'lines',
+        name:'Curve'
+      });
+      traces.push({
+        x: Array.from(bcrv.cpoints.getA(':',0).data),
+        y: Array.from(bcrv.cpoints.getA(':',1).data),
+        z: Array.from(bcrv.cpoints.getA(':',2).data),
+        xaxis : 'x1',
+        yaxis : 'y1',
+        type : 'scatter3d',
+        mode : 'markers',
+        name:'Control Points'
+      });
+
     }
     this.rndr.render2D(traces);
   }
