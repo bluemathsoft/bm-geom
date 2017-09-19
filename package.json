@@ -30,7 +30,6 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "@types/jquery": "^3.2.12",
-    "@types/plotly.js": "^1.28.5",
     "@types/qunit": "^2.0.31",
     "@types/select2": "^4.0.41",
     "@types/three": "^0.84.22",

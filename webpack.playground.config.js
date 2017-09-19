@@ -1,5 +1,5 @@
 module.exports = {
-    entry: "./test/playground-index.ts",
+    entry: "./test/playground/index.ts",
     output: {
         filename: "./build/bluemath-geom-playground.js",
     },

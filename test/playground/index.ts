@@ -25,8 +25,9 @@ import * as Plotly from 'plotly.js/lib/core'
 
 import {DATA} from './pgdata'
 
-function doPlot(plotDiv,width=600,height=600) {
-  let layout:Partial<Plotly.Layout> = {
+/*
+function doPlot(plotDiv:HTMLElement,width=600,height=600) {
+  let layout:any = {
     showlegend : false
   };
   let RANGE = [0,25];
@@ -63,31 +64,38 @@ function doPlot(plotDiv,width=600,height=600) {
         yaxis : 'y2'
       }
     ], layout
-    /*
-    {
-
-      // Vertical
-      xaxis : {range:[0,25]},
-      yaxis : { range:[0,25], domain : [0,0.5]},
-      yaxis2 : { range:[0,25], domain : [0.5,1]}
-
-      // Horizontal
-      //xaxis : { domain:[0,0.45]},
-      //xaxis2 : { domain:[0.55,1]},
-      // yaxis2 : { anchor:'x2' }
-    }
-    */
   );
 
 }
+*/
 
-function nameToKey(name) {
+import {Renderer} from './renderer'
+import {GeometryAdapter} from './adapter'
+
+function nameToKey(name:string) {
   return name.replace(/[\(\)\s]+/g,'-').toLowerCase();
 }
 
 $(document).ready(function () {
 
+  let plotDiv = document.createElement('div');
+  document.body.appendChild(plotDiv);
+
+  let renderer = new Renderer(plotDiv,plotDiv);
+  let adapter = new GeometryAdapter(renderer);
+
   let urlmatch = /#([\d\w-]+)$/.exec(window.location.href);
+
+  let DATA_MAP = {};
+  for(let i=0; i<DATA.length; i++) {
+    let entry = DATA[i];
+    for(let node of entry.objects) {
+      let key = nameToKey(node.name);
+      $('#geom-selection').append(
+        $('<option></option>').val(key).html(node.name));
+      DATA_MAP[key] = node;
+    }
+  }
 
   let selectData = DATA.map(group => {
     return {
@@ -120,12 +128,14 @@ $(document).ready(function () {
     curChoice = $('#pg-selector:selected').val();
   }
 
-  let plotDiv = document.createElement('div');
-  document.body.appendChild(plotDiv);
+  let geomdata = DATA_MAP[curChoice];
+  adapter.render(geomdata);
 
+  /*
   doPlot(plotDiv,window.innerWidth-50, window.innerHeight-50);
 
   $(window).resize(function () {
     doPlot(plotDiv,window.innerWidth-50, window.innerHeight-50);
   });
+  */
 });
