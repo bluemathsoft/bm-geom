@@ -1,4 +1,3 @@
-
  /*
 
  Copyright (C) 2017 Jayesh Salvi, Blue Math Software Inc.
@@ -20,22 +19,36 @@
 
 */
 
-import {
-  BezierCurve, BSplineCurve
-} from './bcurve'
-import {
-  LineSegment, CircleArc, Circle
-} from './curve'
-import {
-  BezierSurface, BSplineSurface
-} from './bsurf'
+import {BSplineSurface} from './bsurf'
 
-export {
-  BezierCurve,
-  BSplineCurve,
-  LineSegment,
-  CircleArc,
-  Circle,
-  BezierSurface,
-  BSplineSurface
-};
+export class BilinearSurface extends BSplineSurface {
+
+}
+
+export class GeneralCylinder extends BSplineSurface {
+
+}
+
+export class Cylinder extends GeneralCylinder {
+
+}
+
+export class RuledSurface extends BSplineSurface {
+
+}
+
+export class RevolutionSurface extends BSplineSurface {
+
+}
+
+export class Cone extends RevolutionSurface {
+
+}
+
+export class Sphere extends RevolutionSurface {
+
+}
+
+export class Torus extends RevolutionSurface {
+
+}
