@@ -1,6 +1,6 @@
 {
   "name": "@bluemath/geom",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Bluemath Geometry library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bluemathsoft/bluemath.git"
+    "url": "git+https://github.com/bluemathsoft/bm-geom.git"
   },
   "keywords": [
     "Math",
@@ -33,7 +33,7 @@
     "@types/plotly.js": "^1.28.5",
     "@types/qunit": "^2.0.31",
     "@types/select2": "^4.0.41",
-    "@types/three": "^0.84.20",
+    "@types/three": "^0.84.22",
     "awesome-typescript-loader": "^3.2.3",
     "jquery": "^3.2.1",
     "plotly.js": "^1.30.1",
@@ -43,13 +43,13 @@
     "three-orbitcontrols-ts": "^0.1.2",
     "typedoc": "^0.8.0",
     "typescript": "^2.5.2",
-    "webpack": "^3.5.5"
+    "webpack": "^3.6.0"
   },
   "bugs": {
-    "url": "https://github.com/bluemathsoft/bluemath/issues"
+    "url": "https://github.com/bluemathsoft/bm-geom/issues"
   },
-  "homepage": "https://github.com/bluemathsoft/bluemath#readme",
+  "homepage": "https://github.com/bluemathsoft/bm-geom#readme",
   "dependencies": {
-    "@bluemath/common": "^0.1.13"
+    "@bluemath/common": "^0.2.1"
   }
 }

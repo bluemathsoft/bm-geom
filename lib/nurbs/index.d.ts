@@ -1,3 +1,3 @@
-import { BezierCurve, BSplineCurve } from './bcurve';
+import { BezierCurve, BSplineCurve, LineSegment, CircleArc, Circle } from './bcurve';
 import { BezierSurface, BSplineSurface } from './bsurf';
-export { BezierCurve, BSplineCurve, BezierSurface, BSplineSurface };
+export { BezierCurve, BSplineCurve, LineSegment, CircleArc, Circle, BezierSurface, BSplineSurface };
