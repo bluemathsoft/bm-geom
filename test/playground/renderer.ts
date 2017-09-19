@@ -23,47 +23,26 @@ import * as Plotly from 'plotly.js/lib/core'
 
 export class Renderer {
 
-  div2D : HTMLElement;
-  div3D : HTMLElement;
+  divPlot : HTMLElement;
+  divGL : HTMLElement;
 
-  constructor(div2D:HTMLElement,div3D:HTMLElement) {
-    this.div2D = div2D;
-    this.div3D = div3D;
+  constructor(divPlot:HTMLElement,divGL:HTMLElement) {
+    this.divPlot = divPlot;
+    this.divGL = divGL;
 
-    this.init2D();
+    this.initPlot();
+    this.initGL();
   }
 
-  private init2D() {
+  private initPlot() {
+  }
 
-    let layout:any = {
-      showlegend : false
-    };
-    let RANGE = [0,25];
-    let margin = 0.0;
-
-    /*
-    if(width < height) { // Portrait - Vertical stack
-      layout.yaxis = { range:RANGE, domain:[0,0.5-margin] };
-      layout.yaxis2 = { range:RANGE, domain:[0.5+margin,1] };
-    } else { // Landscape - Horizontal stack
-      layout.xaxis = { range:RANGE, domain:[0,0.5-margin] };
-      layout.xaxis2 = { range:RANGE, domain:[0.5+margin,1] };
-      layout.yaxis2 = { range:RANGE, anchor : 'x2' };
-    }
-    */
-    layout.margin = {
-      t:0,
-      b:0,
-      l:0,
-      r:0
-    }
-    //plotDiv.style.width = width+'px';
-    //plotDiv.style.height = height+'px';
+  private initGL() {
 
   }
 
   render2D(traces) {
-    Plotly.newPlot(this.div2D, traces, {});
+    Plotly.newPlot(this.divPlot, traces, {});
   }
 
   render3D() {
