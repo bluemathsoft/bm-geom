@@ -109,11 +109,23 @@ $(document).ready(function () {
       })
     };
   });
+  selectData.unshift({id:'0',text:'Select',disabled:true,selected:true});
 
   $('#pg-selector').select2({
     data : selectData,
     width : '50%'
-  }).on('change',function() {
+  });
+
+  let curChoice = null;
+  if(urlmatch) {
+    curChoice = urlmatch[1];
+    $('#pg-selector').val(''+curChoice);
+    $('#pg-selector').trigger('change');
+  } else {
+    curChoice = $('#pg-selector:selected').val();
+  }
+
+  $('#pg-selector').on('change',function() {
     let choice = $('#pg-selector').val();
     window.location.href =
       window.location.protocol + '//' +
@@ -121,16 +133,10 @@ $(document).ready(function () {
     window.location.reload(true);
   });
 
-  let curChoice;
-  if(urlmatch) {
-    curChoice = urlmatch[1];
-    $('#pg-selector').val(''+curChoice);
-  } else {
-    curChoice = $('#pg-selector:selected').val();
-  }
-
   let geomdata = DATA_MAP[curChoice];
-  let adapter = new GeometryAdapter(plotDiv, geomdata);
+  if(geomdata) {
+    let adapter = new GeometryAdapter(plotDiv, geomdata);
+  }
 
   /*
   doPlot(plotDiv,window.innerWidth-50, window.innerHeight-50);
