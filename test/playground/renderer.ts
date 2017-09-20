@@ -24,6 +24,15 @@ import * as THREE from 'three'
 import {OrbitControls} from 'three-orbitcontrols-ts'
 
 
+export interface TessFormat3D {
+  points? : Array<number[]>;
+  line? : Array<number[]>;
+  mesh? : {
+    vertices : number[];
+    faces : number[];
+  }
+}
+
 
 function makeAxes() {
   var L = 50;
@@ -157,27 +166,27 @@ export class Renderer {
     Plotly.newPlot(this.div, traces, {});
   }
 
-  render3D({vertices,faces},points?) {
+  render3D(tess:TessFormat3D) {
 
     // Add geometry mesh
-    let loader = new THREE.JSONLoader();
-    let geometry = loader.parse({ vertices, faces }).geometry;
-    var material = new THREE.MeshLambertMaterial({
-      color: 0x00ff00,
-      side: THREE.DoubleSide,
-      shading : THREE.SmoothShading
-    });
-    geometry.computeVertexNormals();
-    let mesh = new THREE.Mesh(geometry, material);
-    this.scene.add(mesh);
+    if(tess.mesh) {
+      let loader = new THREE.JSONLoader();
+      let geometry = loader.parse(tess.mesh).geometry;
+      var material = new THREE.MeshLambertMaterial({
+        color: 0x00ff00,
+        side: THREE.DoubleSide,
+        shading : THREE.SmoothShading
+      });
+      geometry.computeVertexNormals();
+      let mesh = new THREE.Mesh(geometry, material);
+      this.scene.add(mesh);
+    }
 
     // Add points as sprites
-    if(points) {
+    if(tess.points) {
       let cpointGeometry = new THREE.Geometry();
-      points.forEach(function (row) {
-        row.forEach(function (p) {
-          cpointGeometry.vertices.push(new THREE.Vector3(p[0],p[1],p[2]));
-        });
+      tess.points.forEach(function (p) {
+        cpointGeometry.vertices.push(new THREE.Vector3(p[0],p[1],p[2]));
       });
       let cpointMaterial = new THREE.PointsMaterial({
         size: 10, sizeAttenuation: false,
@@ -186,6 +195,21 @@ export class Renderer {
 
       let cpointParticles = new THREE.Points(cpointGeometry, cpointMaterial);
       this.scene.add(cpointParticles);
+    }
+
+    if(tess.line) {
+      let lineGeom = new THREE.Geometry();
+      for(let i=0; i<tess.line.length-1; i++) {
+        let p = tess.line[i];
+        let n = tess.line[i+1];
+        lineGeom.vertices.push(new THREE.Vector3(p[0],p[1],p[2]));
+        lineGeom.vertices.push(new THREE.Vector3(n[0],n[1],n[2]));
+      }
+      lineGeom.computeLineDistances();
+      let lineseg = new THREE.LineSegments(lineGeom, new THREE.LineBasicMaterial({
+        color : 0xff0000, linewidth:2
+      }));
+      this.scene.add(lineseg);
     }
 
     let orbitControls = this.orbitControls;

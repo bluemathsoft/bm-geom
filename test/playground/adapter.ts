@@ -77,15 +77,24 @@ export class GeometryAdapter {
     switch(geomdata.type) {
     case 'BezierCurve':
       if(is3D) {
-
+        let tess = this.genBezierCurveTess(<BezierCurve>geom);
+        this.rndr.render3D({
+          line:tess.toArray(),
+          points : (<BezierCurve>geom).cpoints.toArray()
+        });
       } else {
-        this.rndr.render2D(this.genBezier2DTess(<BezierCurve>geom));
+        this.rndr.render2D(this.genBezierPlotTraces(<BezierCurve>geom));
       }
       break;
     case 'BSplineCurve':
       break;
     case 'BezSurf':
-      this.rndr.render3D(geom.tessellate(), geom.cpoints.toArray());
+      let [nrows,ncols] = geom.cpoints.shape;
+      let cpointsArr = geom.cpoints.clone().reshape([nrows*ncols,3]);
+      this.rndr.render3D({
+        mesh:geom.tessellate(),
+        points:cpointsArr.toArray()
+      });
       break;
     case 'BSurf':
       break;
@@ -95,7 +104,11 @@ export class GeometryAdapter {
   render(data) {
   }
 
-  genBezier2DTess(bezcrv:BezierCurve) {
+  genBezierCurveTess(bezcrv:BezierCurve) {
+    return bezcrv.tessellate(100);
+  }
+
+  genBezierPlotTraces(bezcrv:BezierCurve) {
     let traces = [];  
     let tess = bezcrv.tessellateAdaptive(0.01);
 
