@@ -490,18 +490,16 @@ export const DATA = [
     "objects" : [
       {
         "name" : "Line1",
-        "type" : "SpecificGeometry",
+        "type" : "LineSegment",
         "object" : {
-          "type" : "LineSegment",
           "from" : [0,1],
           "to" : [0,4]
         }
       },
       {
         "name" : "CircleArc1",
-        "type" : "SpecificGeometry",
+        "type" : "CircleArc",
         "object" : {
-          "type" : "CircleArc",
           "radius" : 4,
           "coord" : {
             origin : [0,0,0],
@@ -514,9 +512,8 @@ export const DATA = [
       },
       {
         "name" : "Circle",
-        "type" : "SpecificGeometry",
+        "type" : "Circle",
         "object" : {
-          "type" : "Circle",
           "radius" : 4,
           "coord" : {
             origin : [0,0,0],

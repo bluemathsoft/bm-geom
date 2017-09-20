@@ -20,8 +20,12 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 */
 
 import {
-  BezierCurve, BSplineCurve, BezierSurface, BSplineSurface
+  BezierCurve, BSplineCurve, BezierSurface, BSplineSurface,
+  LineSegment, CircleArc, Circle
 } from '../../src/nurbs'
+import {
+  CoordSystem
+} from '../../src'
 import {arr} from '@bluemath/common'
 import {Renderer} from './renderer'
 
@@ -74,8 +78,23 @@ export class GeometryAdapter {
       );
       is3D = true;
       break;
+    case "LineSegment":
+      geom = new LineSegment(data.from, data.to);
+      is3D = geom.dimension === 3;
+      break;
+    case "CircleArc":
+      geom = new CircleArc(
+        new CoordSystem(data.coord.origin,data.coord.x,data.coord.z),
+        data.radius,data.start,data.end);
+      is3D = geom.dimension === 3;
+      break;
+    case "Circle":
+      geom = new Circle(
+        new CoordSystem(data.coord.origin,data.coord.x,data.coord.z),
+        data.radius);
+      is3D = geom.dimension === 3;
+      break;
     }
-
 
     this.rndr = new Renderer(div, is3D ? 'threejs':'plotly');
 
@@ -92,6 +111,9 @@ export class GeometryAdapter {
       }
       break;
     case 'BSplineCurve':
+    case "LineSegment":
+    case "CircleArc":
+    case "Circle":
       if(is3D) {
         let tess = this.genBSplineCurveTess(<BSplineCurve>geom);
         this.rndr.render3D({
