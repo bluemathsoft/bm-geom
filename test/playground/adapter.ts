@@ -25,6 +25,8 @@ import {
 import {arr} from '@bluemath/common'
 import {Renderer} from './renderer'
 
+const RESOLUTION = 100;
+
 export class GeometryAdapter {
 
   rndr : Renderer;
@@ -53,7 +55,6 @@ export class GeometryAdapter {
         }
       }
       let {degree, cpoints, knots} = data;
-      const RESOLUTION = 50;
 
       geom = new BSplineCurve(degree,
         arr(cpoints), arr(knots),
@@ -66,6 +67,11 @@ export class GeometryAdapter {
       is3D = true;
       break;
     case 'BSurf':
+      geom = new BSplineSurface(
+        data.u_degree, data.v_degree,
+        arr(data.u_knots), arr(data.v_knots), arr(data.cpoints),
+        data.weights ? arr(data.weights) : undefined
+      );
       is3D = true;
       break;
     }
@@ -73,13 +79,12 @@ export class GeometryAdapter {
 
     this.rndr = new Renderer(div, is3D ? 'threejs':'plotly');
 
-
     switch(geomdata.type) {
     case 'BezierCurve':
       if(is3D) {
         let tess = this.genBezierCurveTess(<BezierCurve>geom);
         this.rndr.render3D({
-          line:tess.toArray(),
+          line : tess.toArray(),
           points : (<BezierCurve>geom).cpoints.toArray()
         });
       } else {
@@ -87,16 +92,24 @@ export class GeometryAdapter {
       }
       break;
     case 'BSplineCurve':
+      if(is3D) {
+        let tess = this.genBSplineCurveTess(<BSplineCurve>geom);
+        this.rndr.render3D({
+          line : tess.toArray(),
+          points : (<BSplineCurve>geom).cpoints.toArray()
+        });
+      } else {
+        this.rndr.render2D(this.genBSplinePlotTraces(<BSplineCurve>geom));
+      }
       break;
     case 'BezSurf':
+    case 'BSurf':
       let [nrows,ncols] = geom.cpoints.shape;
       let cpointsArr = geom.cpoints.clone().reshape([nrows*ncols,3]);
       this.rndr.render3D({
         mesh:geom.tessellate(),
         points:cpointsArr.toArray()
       });
-      break;
-    case 'BSurf':
       break;
     }
   }
@@ -105,7 +118,7 @@ export class GeometryAdapter {
   }
 
   genBezierCurveTess(bezcrv:BezierCurve) {
-    return bezcrv.tessellate(100);
+    return bezcrv.tessellate(RESOLUTION);
   }
 
   genBezierPlotTraces(bezcrv:BezierCurve) {
@@ -133,76 +146,34 @@ export class GeometryAdapter {
     return traces;
   }
 
-  genBezier3DTess(bezcrv:BezierCurve) {
-    let traces = [];  
-    let tess = bezcrv.tessellateAdaptive(0.01);
+  genBSplineCurveTess(bcrv:BSplineCurve) {
+    return bcrv.tessellate(RESOLUTION);
+  }
+
+  genBSplinePlotTraces(bcrv:BSplineCurve) {
+    let traces = [];
+    let tess = bcrv.tessellate(RESOLUTION);
+
     traces.push({
       x: Array.from(tess.getA(':',0).data),
       y: Array.from(tess.getA(':',1).data),
-      z: Array.from(tess.getA(':',2).data),
-      type : 'scatter3d',
+      xaxis : 'x1',
+      yaxis : 'y1',
+      type : 'scatter',
       mode : 'lines',
       name:'Curve'
     });
     traces.push({
-      x: Array.from(bezcrv.cpoints.getA(':',0).data),
-      y: Array.from(bezcrv.cpoints.getA(':',1).data),
-      z: Array.from(bezcrv.cpoints.getA(':',2).data),
-      type : 'scatter3d',
+      x: Array.from(bcrv.cpoints.getA(':',0).data),
+      y: Array.from(bcrv.cpoints.getA(':',1).data),
+      xaxis : 'x1',
+      yaxis : 'y1',
+      type : 'scatter',
       mode : 'markers',
       name:'Control Points'
     });
+
+    return traces;
   }
 
-  /*
-  renderBSplineCurve(data) {
-
-    let tess = bcrv.tessellate(RESOLUTION);
-    let traces = [];
-
-    if(bcrv.dimension === 2) {
-      traces.push({
-        x: Array.from(tess.getA(':',0).data),
-        y: Array.from(tess.getA(':',1).data),
-        xaxis : 'x1',
-        yaxis : 'y1',
-        type : 'scatter',
-        mode : 'lines',
-        name:'Curve'
-      });
-      traces.push({
-        x: Array.from(bcrv.cpoints.getA(':',0).data),
-        y: Array.from(bcrv.cpoints.getA(':',1).data),
-        xaxis : 'x1',
-        yaxis : 'y1',
-        type : 'scatter',
-        mode : 'markers',
-        name:'Control Points'
-      });
-    } else if(bcrv.dimension === 3) {
-      traces.push({
-        x: Array.from(tess.getA(':',0).data),
-        y: Array.from(tess.getA(':',1).data),
-        z: Array.from(tess.getA(':',2).data),
-        xaxis : 'x1',
-        yaxis : 'y1',
-        type : 'scatter3d',
-        mode : 'lines',
-        name:'Curve'
-      });
-      traces.push({
-        x: Array.from(bcrv.cpoints.getA(':',0).data),
-        y: Array.from(bcrv.cpoints.getA(':',1).data),
-        z: Array.from(bcrv.cpoints.getA(':',2).data),
-        xaxis : 'x1',
-        yaxis : 'y1',
-        type : 'scatter3d',
-        mode : 'markers',
-        name:'Control Points'
-      });
-
-    }
-    this.rndr.render2D(traces);
-  }
-  */
 }
