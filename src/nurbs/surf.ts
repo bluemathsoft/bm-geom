@@ -20,8 +20,15 @@
 */
 
 import {BSplineSurface} from './bsurf'
+import {arr} from '@bluemath/common'
 
 export class BilinearSurface extends BSplineSurface {
+
+  constructor(p00:number[],p01:number[],p10:number[],p11:number[]) {
+    super(1,1,
+      arr([0,0,1,1]), arr([0,0,1,1]),
+      arr([[p00,p01],[p10,p11]]));
+  }
 
 }
 

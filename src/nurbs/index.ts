@@ -29,6 +29,10 @@ import {
 import {
   BezierSurface, BSplineSurface
 } from './bsurf'
+import {
+  BilinearSurface, GeneralCylinder, RevolutionSurface, RuledSurface,
+  Cylinder, Sphere, Cone
+} from './surf'
 
 export {
   BezierCurve,
@@ -37,5 +41,12 @@ export {
   CircleArc,
   Circle,
   BezierSurface,
-  BSplineSurface
+  BSplineSurface,
+  BilinearSurface,
+  GeneralCylinder,
+  RevolutionSurface,
+  RuledSurface,
+  Cylinder,
+  Sphere,
+  Cone
 };

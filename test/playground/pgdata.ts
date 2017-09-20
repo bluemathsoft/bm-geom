@@ -525,6 +525,31 @@ export const DATA = [
     ]
   },
   {
+    "groupname" : "Specific Surfaces",
+    "objects" : [
+      {
+        "name" : "Bilinear Surf 1",
+        "type" : "BilinearSurface",
+        "object" : {
+          p00 : [-1,-1,0],
+          p01 : [1,-1,1],
+          p10 : [-1,1,1],
+          p11 : [1,1,0]
+        }
+      },
+      {
+        "name" : "Flat Plane Z=1",
+        "type" : "BilinearSurface",
+        "object" : {
+          p00 : [-1,-1,1],
+          p01 : [1,-1,1],
+          p10 : [-1,1,1],
+          p11 : [1,1,1]
+        }
+      },
+    ]
+  },
+  {
     "groupname" : "Actions",
     "objects" : [
       {

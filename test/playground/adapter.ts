@@ -21,7 +21,8 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 
 import {
   BezierCurve, BSplineCurve, BezierSurface, BSplineSurface,
-  LineSegment, CircleArc, Circle
+  LineSegment, CircleArc, Circle,
+  BilinearSurface
 } from '../../src/nurbs'
 import {
   CoordSystem
@@ -94,6 +95,10 @@ export class GeometryAdapter {
         data.radius);
       is3D = geom.dimension === 3;
       break;
+    case "BilinearSurface":
+      geom = new BilinearSurface(data.p00,data.p01,data.p10,data.p11);
+      is3D = true;
+      break;
     }
 
     this.rndr = new Renderer(div, is3D ? 'threejs':'plotly');
@@ -126,6 +131,7 @@ export class GeometryAdapter {
       break;
     case 'BezSurf':
     case 'BSurf':
+    case 'BilinearSurface':
       let [nrows,ncols] = geom.cpoints.shape;
       let cpointsArr = geom.cpoints.clone().reshape([nrows*ncols,3]);
       this.rndr.render3D({
