@@ -80,9 +80,10 @@ $(document).ready(function () {
 
   let plotDiv = document.createElement('div');
   document.body.appendChild(plotDiv);
+  plotDiv.style.width = '600px';
+  plotDiv.style.height = '600px';
+    
 
-  let renderer = new Renderer(plotDiv,plotDiv);
-  let adapter = new GeometryAdapter(renderer);
 
   let urlmatch = /#([\d\w-]+)$/.exec(window.location.href);
 
@@ -129,7 +130,7 @@ $(document).ready(function () {
   }
 
   let geomdata = DATA_MAP[curChoice];
-  adapter.render(geomdata);
+  let adapter = new GeometryAdapter(plotDiv, geomdata);
 
   /*
   doPlot(plotDiv,window.innerWidth-50, window.innerHeight-50);
