@@ -264,7 +264,12 @@ class BSplineSurface {
       temp = zeros([dim]); 
       let v_ind = v_span - this.v_degree + l;
       for(let k=0; k<this.u_degree+1; k++) {
-        temp = add(temp, mul(Nu[k],this.cpoints.get(u_ind+k,v_ind)));
+        if(this.weights) {
+          temp = add(temp, mul(Nu[k],
+            this.cpoints.get(u_ind+k,v_ind),this.weights.get(u_ind+k,v_ind)));
+        } else {
+          temp = add(temp, mul(Nu[k],this.cpoints.get(u_ind+k,v_ind)));
+        }
       }
       tess.set(uidx,vidx,
         add(tess.get(uidx,vidx), mul(Nv[l], temp)));
