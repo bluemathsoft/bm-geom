@@ -173,9 +173,11 @@ export class Renderer {
       let loader = new THREE.JSONLoader();
       let geometry = loader.parse(tess.mesh).geometry;
       var material = new THREE.MeshLambertMaterial({
-        color: 0x00ff00,
+        color: 0x4444ff,
         side: THREE.DoubleSide,
-        shading : THREE.SmoothShading
+        flatShading : false,
+        transparent : true,
+        opacity : 0.5
       });
       geometry.computeVertexNormals();
       let mesh = new THREE.Mesh(geometry, material);
