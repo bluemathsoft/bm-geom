@@ -22,14 +22,15 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 import * as Plotly from 'plotly.js/lib/core'
 import * as THREE from 'three'
 import {OrbitControls} from 'three-orbitcontrols-ts'
+import {TypedArray} from '@bluemath/common'
 
 
 export interface TessFormat3D {
   points? : Array<number[]>;
   line? : Array<number[]>;
   mesh? : {
-    vertices : number[];
-    faces : number[];
+    vertices : TypedArray|number[];
+    faces : TypedArray|number[];
   }
 }
 
@@ -79,7 +80,6 @@ function makeAxes() {
 export class Renderer {
 
   private div : HTMLElement;
-  private canvas3 : HTMLCanvasElement;
   private scene : THREE.Scene;
   private glrndr : THREE.WebGLRenderer;
   private camera : THREE.Camera;
@@ -104,8 +104,8 @@ export class Renderer {
     this.div.appendChild(canvas3);
 
     let renderer = new THREE.WebGLRenderer({canvas:canvas3,antialias:true});
-    let width = parseInt(this.div.style.width);
-    let height = parseInt(this.div.style.height);
+    let width = parseInt(this.div.style.width||'600');
+    let height = parseInt(this.div.style.height||'600');
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(0xffffff, 1);
@@ -162,7 +162,7 @@ export class Renderer {
     this.orbitControls = orbitControls;
   }
 
-  render2D(traces) {
+  render2D(traces:any) {
     Plotly.newPlot(this.div, traces, {});
   }
 

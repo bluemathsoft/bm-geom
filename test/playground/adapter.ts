@@ -27,7 +27,7 @@ import {
 import {
   CoordSystem
 } from '../../src'
-import {arr} from '@bluemath/common'
+import {arr,NDArray} from '@bluemath/common'
 import {Renderer} from './renderer'
 
 const RESOLUTION = 100;
@@ -101,6 +101,7 @@ export class GeometryAdapter {
       break;
     }
 
+    console.assert(geom);
     this.rndr = new Renderer(div, is3D ? 'threejs':'plotly');
 
     switch(geomdata.type) {
@@ -132,20 +133,19 @@ export class GeometryAdapter {
     case 'BezSurf':
     case 'BSurf':
     case 'BilinearSurface':
-      let [nrows,ncols] = geom.cpoints.shape;
-      let cpointsArr = geom.cpoints.clone().reshape([nrows*ncols,3]);
+      let [nrows,ncols] = (<BSplineSurface>geom).cpoints.shape;
+      let cpointsArr = (<BSplineSurface>geom)
+        .cpoints.clone().reshape([nrows*ncols,3]);
       this.rndr.render3D({
-        mesh:geom.tessellate(),
+        mesh:(<BSplineSurface>geom).tessellate(),
         points:cpointsArr.toArray()
       });
       break;
     }
   }
 
-  render(data) {
-  }
 
-  genBezierCurveTess(bezcrv:BezierCurve) {
+  genBezierCurveTess(bezcrv:BezierCurve) : NDArray {
     return bezcrv.tessellate(RESOLUTION);
   }
 

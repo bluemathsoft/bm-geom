@@ -21,7 +21,6 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 
 import $ = require("jquery");
 require('select2');
-import * as Plotly from 'plotly.js/lib/core'
 
 import {DATA} from './pgdata'
 
@@ -69,7 +68,6 @@ function doPlot(plotDiv:HTMLElement,width=600,height=600) {
 }
 */
 
-import {Renderer} from './renderer'
 import {GeometryAdapter} from './adapter'
 
 function nameToKey(name:string) {
@@ -87,7 +85,7 @@ $(document).ready(function () {
 
   let urlmatch = /#([\d\w-]+)$/.exec(window.location.href);
 
-  let DATA_MAP = {};
+  let DATA_MAP:any = {};
   for(let i=0; i<DATA.length; i++) {
     let entry = DATA[i];
     for(let node of entry.objects) {
@@ -98,7 +96,7 @@ $(document).ready(function () {
     }
   }
 
-  let selectData = DATA.map(group => {
+  let selectData:any[] = DATA.map(group => {
     return {
       text : group.groupname,
       children : (<any[]>group.objects).map(object => {
@@ -133,9 +131,11 @@ $(document).ready(function () {
     window.location.reload(true);
   });
 
-  let geomdata = DATA_MAP[curChoice];
-  if(geomdata) {
-    let adapter = new GeometryAdapter(plotDiv, geomdata);
+  if(typeof curChoice === 'string') {
+    let geomdata = DATA_MAP[curChoice];
+    if(geomdata) {
+      new GeometryAdapter(plotDiv, geomdata);
+    }
   }
 
   /*
