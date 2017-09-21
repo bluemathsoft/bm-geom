@@ -134,7 +134,7 @@ $(document).ready(function () {
   if(typeof curChoice === 'string') {
     let geomdata = DATA_MAP[curChoice];
     if(geomdata) {
-      new GeometryAdapter(plotDiv, geomdata);
+      new GeometryAdapter(plotDiv, geomdata, DATA_MAP, nameToKey);
     }
   }
 

@@ -22,7 +22,7 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 import {
   BezierCurve, BSplineCurve, BezierSurface, BSplineSurface,
   LineSegment, CircleArc, Circle,
-  BilinearSurface
+  BilinearSurface, GeneralCylinder
 } from '../../src/nurbs'
 import {
   CoordSystem
@@ -36,7 +36,10 @@ export class GeometryAdapter {
 
   rndr : Renderer;
 
-  constructor(div:HTMLElement, geomdata:any) {
+  constructor(div:HTMLElement, geomdata:any,
+    DATA_MAP:any,
+    nameToKey:(s:string)=>string)
+  {
     let is3D = false;
     let geom;
     let data = geomdata.object;
@@ -99,10 +102,26 @@ export class GeometryAdapter {
       geom = new BilinearSurface(data.p00,data.p01,data.p10,data.p11);
       is3D = true;
       break;
+    case "GeneralCylinder":
+      let curveData = typeof data.curve === 'string' ?
+        DATA_MAP[nameToKey(data.curve)] : data.curve;
+      let curve:BSplineCurve;
+      if(curveData.type === 'BSplineCurve') {
+        let d = curveData.object;
+        curve = new BSplineCurve(d.degree, arr(d.cpoints), arr(d.knots),
+          d.weights ? arr(d.weights) : undefined);
+        if(curve.dimension === 2) { curve.to3D(); }
+      } else {
+        console.assert(false);
+      }
+      geom = new GeneralCylinder(curve!, data.direction, data.height);
+      is3D = true;
+      break;
     }
 
     console.assert(geom);
     this.rndr = new Renderer(div, is3D ? 'threejs':'plotly');
+
 
     switch(geomdata.type) {
     case 'BezierCurve':
@@ -133,6 +152,7 @@ export class GeometryAdapter {
     case 'BezSurf':
     case 'BSurf':
     case 'BilinearSurface':
+    case 'GeneralCylinder':
       let [nrows,ncols] = (<BSplineSurface>geom).cpoints.shape;
       let cpointsArr = (<BSplineSurface>geom)
         .cpoints.clone().reshape([nrows*ncols,3]);

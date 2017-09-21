@@ -49,6 +49,16 @@ export class BezierCurve {
     return this.cpoints.shape[1];
   }
 
+  to3D() {
+    if(this.dimension === 3) { return; }
+    console.assert(this.dimension === 2);
+    let cpoints = this.cpoints.toArray();
+    for(let i=0; i<cpoints.length; i++) {
+      cpoints[i].push(0);
+    }
+    this.cpoints = arr(cpoints);
+  }
+
   /**
    * Is this Rational Bezier Curve
    */
@@ -276,6 +286,16 @@ export class BSplineCurve {
 
   get dimension() {
     return this.cpoints.shape[1];
+  }
+
+  to3D() {
+    if(this.dimension === 3) { return; }
+    console.assert(this.dimension === 2);
+    let cpoints = this.cpoints.toArray();
+    for(let i=0; i<cpoints.length; i++) {
+      cpoints[i].push(0);
+    }
+    this.cpoints = arr(cpoints);
   }
 
   /**

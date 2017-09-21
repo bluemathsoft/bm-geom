@@ -564,13 +564,31 @@ export const DATA = [
         }
       },
       {
-        "name" : "Flat Plane Z=1",
+        "name" : "Flat Plane Z_1",
         "type" : "BilinearSurface",
         "object" : {
           p00 : [-1,-1,1],
           p01 : [1,-1,1],
           p10 : [-1,1,1],
           p11 : [1,1,1]
+        }
+      },
+      {
+        "name" : "General Cylinder 1",
+        "type" : "GeneralCylinder",
+        "object" : {
+          "curve" : "Simple BSpline 2",
+          "direction" : [0,0,1],
+          "height" : 2
+        }
+      },
+      {
+        "name" : "General Cylinder 2",
+        "type" : "GeneralCylinder",
+        "object" : {
+          "curve" : "Rational BSpline 0",
+          "direction" : [0,0,1],
+          "height" : 2
         }
       },
     ]
