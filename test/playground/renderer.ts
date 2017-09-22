@@ -76,18 +76,67 @@ function makeAxes() {
   ]
 }
 
+interface GL {
+  scene : THREE.Scene;
+  glrndr : THREE.WebGLRenderer;
+  camera : THREE.Camera;
+  orbitControls : OrbitControls;
+  cpointSprite : THREE.Texture;
+}
+
+function makeGL(canvas3:HTMLCanvasElement,width:number,height:number) : GL {
+  let renderer = new THREE.WebGLRenderer({canvas:canvas3, antialias:true});
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(0xffffff, 1);
+
+  let camera = new THREE.PerspectiveCamera(75, width/height, 1, 200);
+
+  let scene = new THREE.Scene();
+  //scene.fog = new THREE.Fog(0xffffff, 150,200);
+
+  makeAxes().forEach(function (o) { scene.add(o); });
+
+  let ambientLight = new THREE.AmbientLight(0x111111);
+  scene.add(ambientLight);
+
+  let ypluslight = new THREE.PointLight( 0xFFFFFF );
+  ypluslight.position.set(0, 10, 0);
+  scene.add(ypluslight);
+  let yminuslight = new THREE.PointLight( 0xFFFFFF );
+  yminuslight.position.set(0, -10, 0);
+  scene.add(yminuslight);
+  let amblight = new THREE.AmbientLight(0x444444);
+  scene.add(amblight);
+
+  camera.position.x = 4;
+  camera.position.y = 4;
+  camera.position.z = 4;
+
+  var orbitControls = new OrbitControls(camera, renderer.domElement);
+  orbitControls.enableDamping = true;
+  orbitControls.dampingFactor = 0.25;
+  orbitControls.enableZoom = true;
+  orbitControls.autoRotate = true;
+  orbitControls.autoRotateSpeed = 0.35;
+
+  return {
+    cpointSprite : THREE.ImageUtils.loadTexture( "cpoint.png" ),
+    scene : scene,
+    glrndr : renderer,
+    camera : camera,
+    orbitControls : orbitControls
+  };
+}
 
 export class Renderer {
 
   private div : HTMLElement;
-  private scene : THREE.Scene;
-  private glrndr : THREE.WebGLRenderer;
-  private camera : THREE.Camera;
-  private orbitControls : OrbitControls;
-  private cpointSprite : THREE.Texture;
   private plotlyLayout : any;
   private width : number;
   private height : number;
+  private gl1 : GL;
+  private gl2? : GL;
 
   constructor(div:HTMLElement,type:'plotly'|'threejs',split=false) {
     this.div = div;
@@ -97,7 +146,7 @@ export class Renderer {
     if(type === 'plotly') {
       this.initPlot(split);
     } else {
-      this.initGL();
+      this.initGL(split);
     }
   }
 
@@ -123,65 +172,19 @@ export class Renderer {
     }
   }
 
-  private initGL() {
-    let canvas3 = document.createElement('canvas');
-    this.div.appendChild(canvas3);
-
-    let renderer = new THREE.WebGLRenderer({canvas:canvas3,antialias:true});
-    renderer.setSize(this.width, this.height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setClearColor(0xffffff, 1);
-
-    let camera = new THREE.PerspectiveCamera(75, this.width/this.height, 1, 200);
-
-    let scene = new THREE.Scene();
-    //scene.fog = new THREE.Fog(0xffffff, 150,200);
-
-    makeAxes().forEach(function (o) { scene.add(o); });
-
-    this.cpointSprite = THREE.ImageUtils.loadTexture( "cpoint.png" );
-
-    let ambientLight = new THREE.AmbientLight(0x111111);
-    scene.add(ambientLight);
-
-    let ypluslight = new THREE.PointLight( 0xFFFFFF );
-    ypluslight.position.set( 0, 10, 0 );
-    scene.add( ypluslight );
-    let yminuslight = new THREE.PointLight( 0xFFFFFF );
-    yminuslight.position.set( 0, -10, 0 );
-    scene.add( yminuslight );
-    /*
-    let xpluslight = new THREE.PointLight( 0xFFFFFF );
-    xpluslight.position.set( 10, 0, 0 );
-    scene.add( xpluslight );
-    let xminuslight = new THREE.PointLight( 0xFFFFFF );
-    xminuslight.position.set( -10, 0, 0 );
-    scene.add( xminuslight );
-    let zpluslight = new THREE.PointLight( 0xFFFFFF );
-    zpluslight.position.set( 0, 0, 10 );
-    scene.add( zpluslight );
-    let zminuslight = new THREE.PointLight( 0xFFFFFF );
-    zminuslight.position.set( 0, 0, -10 );
-    scene.add( zminuslight );
-    */
-    let amblight = new THREE.AmbientLight(0x444444);
-    scene.add(amblight);
-
-    camera.position.x = 4;
-    camera.position.y = 4;
-    camera.position.z = 4;
-
-    var orbitControls = new OrbitControls(camera, renderer.domElement);
-    orbitControls.enableDamping = true;
-    orbitControls.dampingFactor = 0.25;
-    orbitControls.enableZoom = true;
-    orbitControls.autoRotate = true;
-    orbitControls.autoRotateSpeed = 0.35;
-
-    this.scene = scene;
-    this.glrndr = renderer;
-    this.camera = camera;
-    this.orbitControls = orbitControls;
+  private initGL(split:boolean) {
+    if(split) {
+      let canvas1 = document.createElement('canvas');
+      this.div.appendChild(canvas1);
+      this.gl1 = makeGL(canvas1,this.width,this.height/2);
+      let canvas2 = document.createElement('canvas');
+      this.div.appendChild(canvas2);
+      this.gl2 = makeGL(canvas2,this.width,this.height/2);
+    } else {
+      let canvas1 = document.createElement('canvas');
+      this.div.appendChild(canvas1);
+      this.gl1 = makeGL(canvas1,this.width,this.height);
+    }
   }
 
   render2D(traces:any,range?:{x:number[],y:number[]}) {
@@ -209,7 +212,7 @@ export class Renderer {
       });
       geometry.computeVertexNormals();
       let mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(mesh);
+      this.gl1.scene.add(mesh);
     }
 
     // Add points as sprites
@@ -220,11 +223,11 @@ export class Renderer {
       });
       let cpointMaterial = new THREE.PointsMaterial({
         size: 10, sizeAttenuation: false,
-        map: this.cpointSprite, alphaTest: 0.5, transparent: true });
+        map: this.gl1.cpointSprite, alphaTest: 0.5, transparent: true });
       cpointMaterial.color.setHSL(1.0, 0.3, 0.7);
 
       let cpointParticles = new THREE.Points(cpointGeometry, cpointMaterial);
-      this.scene.add(cpointParticles);
+      this.gl1.scene.add(cpointParticles);
     }
 
     if(tess.line) {
@@ -239,13 +242,13 @@ export class Renderer {
       let lineseg = new THREE.LineSegments(lineGeom, new THREE.LineBasicMaterial({
         color : 0xff0000, linewidth:2
       }));
-      this.scene.add(lineseg);
+      this.gl1.scene.add(lineseg);
     }
 
-    let orbitControls = this.orbitControls;
-    let glrndr = this.glrndr;
-    let scene = this.scene;
-    let camera = this.camera;
+    let orbitControls = this.gl1.orbitControls;
+    let glrndr = this.gl1.glrndr;
+    let scene = this.gl1.scene;
+    let camera = this.gl1.camera;
 
     var render = function () {
       orbitControls.update();
