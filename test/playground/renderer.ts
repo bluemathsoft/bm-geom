@@ -85,18 +85,42 @@ export class Renderer {
   private camera : THREE.Camera;
   private orbitControls : OrbitControls;
   private cpointSprite : THREE.Texture;
+  private plotlyLayout : any;
+  private width : number;
+  private height : number;
 
-  constructor(div:HTMLElement,type:'plotly'|'threejs') {
+  constructor(div:HTMLElement,type:'plotly'|'threejs',split=false) {
     this.div = div;
+    this.width = parseInt(this.div.style.width||'600');
+    this.height = parseInt(this.div.style.height||'600');
 
     if(type === 'plotly') {
-      this.initPlot();
+      this.initPlot(split);
     } else {
       this.initGL();
     }
   }
 
-  private initPlot() {
+  private initPlot(split:boolean) {
+    let margin = 0.05;
+    if(split) {
+      this.plotlyLayout = {};
+      if(this.width < this.height) { // Portrait - Vertical stack
+        this.plotlyLayout.xaxis = { anchor:'y1' };
+        this.plotlyLayout.xaxis2 = { anchor:'y2' };
+        this.plotlyLayout.yaxis = { domain:[0.5+margin,1] };
+        this.plotlyLayout.yaxis2 = { domain:[0,0.5-margin] };
+      } else { // Landscape - Horizontal stack
+        console.assert(false); // TODO
+        this.plotlyLayout.xaxis = { domain:[0.5+margin,1] };
+        this.plotlyLayout.xaxis2 = { domain:[0,0.5-margin] };
+        this.plotlyLayout.yaxis = { };
+        this.plotlyLayout.yaxis2 = { anchor : 'x2' };
+      }
+      this.plotlyLayout.margin = { t:0, b:0, l:0, r:0 };
+    } else {
+      this.plotlyLayout = {};
+    }
   }
 
   private initGL() {
@@ -104,13 +128,11 @@ export class Renderer {
     this.div.appendChild(canvas3);
 
     let renderer = new THREE.WebGLRenderer({canvas:canvas3,antialias:true});
-    let width = parseInt(this.div.style.width||'600');
-    let height = parseInt(this.div.style.height||'600');
-    renderer.setSize(width, height);
+    renderer.setSize(this.width, this.height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(0xffffff, 1);
 
-    let camera = new THREE.PerspectiveCamera(75, width/height, 1, 200);
+    let camera = new THREE.PerspectiveCamera(75, this.width/this.height, 1, 200);
 
     let scene = new THREE.Scene();
     //scene.fog = new THREE.Fog(0xffffff, 150,200);
@@ -162,8 +184,14 @@ export class Renderer {
     this.orbitControls = orbitControls;
   }
 
-  render2D(traces:any) {
-    Plotly.newPlot(this.div, traces, {});
+  render2D(traces:any,range?:{x:number[],y:number[]}) {
+    if(range) {
+      this.plotlyLayout.xaxis.range = range.x;
+      this.plotlyLayout.xaxis2.range = range.x;
+      this.plotlyLayout.yaxis.range = range.y;
+      this.plotlyLayout.yaxis2.range = range.y;
+    }
+    Plotly.newPlot(this.div, traces, this.plotlyLayout);
   }
 
   render3D(tess:TessFormat3D) {

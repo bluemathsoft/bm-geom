@@ -68,7 +68,7 @@ function doPlot(plotDiv:HTMLElement,width=600,height=600) {
 }
 */
 
-import {GeometryAdapter} from './adapter'
+import {GeometryAdapter, ActionAdapter} from './adapter'
 
 function nameToKey(name:string) {
   return name.replace(/[\(\)\s]+/g,'-').toLowerCase();
@@ -132,9 +132,15 @@ $(document).ready(function () {
   });
 
   if(typeof curChoice === 'string') {
-    let geomdata = DATA_MAP[curChoice];
-    if(geomdata) {
-      new GeometryAdapter(plotDiv, geomdata, DATA_MAP, nameToKey);
+    let data = DATA_MAP[curChoice];
+    if(data) {
+      if(data.type === 'Action') {
+        plotDiv.style.height = '800px';
+        new ActionAdapter(plotDiv, data, DATA_MAP, nameToKey);
+      } else {
+        plotDiv.style.height = '500px';
+        new GeometryAdapter(plotDiv, data, DATA_MAP, nameToKey);
+      }
     }
   }
 

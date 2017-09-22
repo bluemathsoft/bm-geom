@@ -24,7 +24,7 @@ import {
   bernstein, planeFrom3Points
 } from './helper'
 import {
-  NDArray,zeros,arr,add,dot,mul,dir,count,empty,iszero,
+  NDArray,zeros,arr,add,dot,mul,dir,count,empty,iszero,AABB,
   EPSILON
 } from '@bluemath/common'
 
@@ -158,6 +158,15 @@ class BezierSurface {
     tessPoints.reshape([N*N]);
     return {vertices:tessPoints.data,faces};
   }
+
+  aabb() : AABB {
+    let aabb = new AABB(this.dimension);
+    for(let i=0; i<this.cpoints.length; i++) {
+      let cpoint = <NDArray>this.cpoints.get(i);
+      aabb.update(cpoint);
+    }
+    return aabb;
+  }
 }
 
 class BSplineSurface {
@@ -212,6 +221,15 @@ class BSplineSurface {
       this.cpoints.clone(),
       this.weights ? this.weights.clone() : undefined
     );
+  }
+
+  aabb() : AABB {
+    let aabb = new AABB(this.dimension);
+    for(let i=0; i<this.cpoints.length; i++) {
+      let cpoint = <NDArray>this.cpoints.get(i);
+      aabb.update(cpoint);
+    }
+    return aabb;
   }
 
   isRational() {

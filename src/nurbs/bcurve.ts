@@ -237,11 +237,20 @@ export class BezierCurve {
     );
   }
 
+  split(uk:number) : BezierCurve[] {
+    let left = this.clone();
+    let right = this.clone();
+    left.reparam(0,uk);
+    right.reparam(uk,1);
+    return [left,right]
+  }
+
   toString() {
-    let s = `Bezier(Deg ${this.degree} cpoints ${this.cpoints.toString()})`;
+    let s = `Bezier(Deg ${this.degree} cpoints ${this.cpoints.toString()}`;
     if(this.weights) {
       s += ` weights ${this.weights.toString()}`;
     }
+    s += ')';
     return s;
   }
 }
@@ -468,6 +477,11 @@ export class BSplineCurve {
       }
     }
     return Nip;
+  }
+
+  tessellateAdaptive(tolerance=EPSILON) : NDArray {
+    tolerance;
+    return this.tessellate(100); // TODO
   }
 
   /**

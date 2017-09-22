@@ -600,18 +600,18 @@ export const DATA = [
         "name" : "Split Bezier 0",
         "type" : "Action",
         "object" : {
-          "actiontype" : "split_bezier",
+          "actiontype" : "split_curve",
           "input" : "Cubic Bezier 0",
-          "split_intervals" : [[0,0.4],[0.4,1]]
+          "parameter" : 0.4
         }
       },
       {
         "name" : "Split Bezier 1",
         "type" : "Action",
         "object" : {
-          "actiontype" : "split_bezier",
+          "actiontype" : "split_curve",
           "input" : "Cubic Bezier 1",
-          "split_intervals" : [[0,0.4],[0.4,1]]
+          "parameter" : 0.4
         }
       },
       {
