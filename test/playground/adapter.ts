@@ -167,7 +167,6 @@ export class GeometryAdapter {
     console.assert(geom);
     this.rndr = new Renderer(div, is3D ? 'threejs':'plotly');
 
-
     switch(geomdata.type) {
     case 'BezierCurve':
       if(is3D) {
@@ -210,9 +209,6 @@ export class GeometryAdapter {
       break;
     }
   }
-
-
-
 }
 
 function computeRange(
@@ -258,14 +254,44 @@ export class ActionAdapter {
     switch(aobject.actiontype) {
     case 'split_curve':
       let [left,right] = (<BezierCurve>geom).split(aobject.parameter);
-      let traces = [
+      rndr.render2D([
         ...genBezierPlotTraces(<BezierCurve>geom,['x1','y1']),
         ...genBezierPlotTraces(<BezierCurve>left,['x2','y2']),
         ...genBezierPlotTraces(<BezierCurve>right,['x2','y2']),
-      ];
-      rndr.render2D(traces,computeRange([geom]));
+      ],computeRange([geom]));
       break;
     case 'insert_knot_curve':
+      {
+        let result = geom.clone();
+        (<BSplineCurve>result).insertKnot(
+          aobject.knot_to_insert,aobject.num_insertions);
+        rndr.render2D([
+          ...genBSplinePlotTraces(<BSplineCurve>geom,['x1','y1']),
+          ...genBSplinePlotTraces(<BSplineCurve>result,['x2','y2']),
+        ],computeRange([geom]));
+      }
+      break;
+    case 'refine_knot_curve':
+      {
+        let result = geom.clone();
+        (<BSplineCurve>result).refineKnots(aobject.knots_to_add);
+        rndr.render2D([
+          ...genBSplinePlotTraces(<BSplineCurve>geom,['x1','y1']),
+          ...genBSplinePlotTraces(<BSplineCurve>result,['x2','y2']),
+        ],computeRange([geom]));
+      }
+      break;
+    case 'decompose_curve':
+      {
+        let result = (<BSplineCurve>geom).decompose();
+        rndr.render2D([
+          ...genBSplinePlotTraces(<BSplineCurve>geom,['x1','y1']),
+          ...result.reduce((total:any[],cursor) => {
+            return total.concat(
+              genBezierPlotTraces(<BezierCurve>cursor,['x2','y2']));
+          },[]),
+        ],computeRange([geom]));
+      }
       break;
     }
 

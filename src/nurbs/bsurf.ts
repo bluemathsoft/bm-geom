@@ -167,6 +167,12 @@ class BezierSurface {
     }
     return aabb;
   }
+
+  clone() : BezierSurface {
+    return new BezierSurface(
+      this.u_degree, this.v_degree,
+      this.cpoints, this.weights);
+  }
 }
 
 class BSplineSurface {
