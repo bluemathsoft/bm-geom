@@ -28,7 +28,7 @@ import {
   CoordSystem
 } from '../../src'
 import {arr,NDArray, AABB} from '@bluemath/common'
-import {Renderer} from './renderer'
+import {Renderer,TessFormat3D} from './renderer'
 
 const RESOLUTION = 100;
 
@@ -171,10 +171,10 @@ export class GeometryAdapter {
     case 'BezierCurve':
       if(is3D) {
         let tess = genBezierCurveTess(<BezierCurve>geom);
-        this.rndr.render3D({
+        this.rndr.render3D([{
           line : tess.toArray(),
           points : (<BezierCurve>geom).cpoints.toArray()
-        });
+        }]);
       } else {
         this.rndr.render2D(
           genBezierPlotTraces(<BezierCurve>geom),computeRange([geom]));
@@ -186,10 +186,10 @@ export class GeometryAdapter {
     case 'Circle':
       if(is3D) {
         let tess = genBSplineCurveTess(<BSplineCurve>geom);
-        this.rndr.render3D({
+        this.rndr.render3D([{
           line : tess.toArray(),
           points : (<BSplineCurve>geom).cpoints.toArray()
-        });
+        }]);
       } else {
         this.rndr.render2D(
           genBSplinePlotTraces(<BSplineCurve>geom), computeRange([geom]));
@@ -202,10 +202,10 @@ export class GeometryAdapter {
       let [nrows,ncols] = (<BSplineSurface>geom).cpoints.shape;
       let cpointsArr = (<BSplineSurface>geom)
         .cpoints.clone().reshape([nrows*ncols,3]);
-      this.rndr.render3D({
+      this.rndr.render3D([{
         mesh:(<BSplineSurface>geom).tessellate(),
         points:cpointsArr.toArray()
-      });
+      }]);
       break;
     }
   }
@@ -291,6 +291,110 @@ export class ActionAdapter {
               genBezierPlotTraces(<BezierCurve>cursor,['x2','y2']));
           },[]),
         ],computeRange([geom]));
+      }
+      break;
+    case 'insert_knot_surf':
+      {
+        let result = <BSplineSurface>geom.clone();
+        if(aobject.hasOwnProperty('u_knot_to_insert')) {
+          result.insertKnotU(
+            aobject.u_knot_to_insert, aobject.num_insertions_u
+          );
+        }
+        if(aobject.hasOwnProperty('v_knot_to_insert')) {
+          result.insertKnotV(
+            aobject.v_knot_to_insert, aobject.num_insertions_v
+          );
+        }
+
+        let [nrows1,ncols1] = (<BSplineSurface>geom).cpoints.shape;
+        let cpointsArr1 = (<BSplineSurface>geom)
+          .cpoints.clone().reshape([nrows1*ncols1,3]);
+
+        let [nrows2,ncols2] = (<BSplineSurface>result).cpoints.shape;
+        let cpointsArr2 = (<BSplineSurface>result)
+          .cpoints.clone().reshape([nrows2*ncols2,3]);
+
+        rndr.render3D([
+          {
+            mesh:(<BSplineSurface>geom).tessellate(),
+            points:cpointsArr1.toArray(),
+            targetGL : 1
+          },
+          {
+            mesh:(<BSplineSurface>result).tessellate(),
+            points:cpointsArr2.toArray(),
+            targetGL : 2
+          }
+        ]);
+      }
+      break;
+    case 'refine_knot_surf':
+      {
+        let result = <BSplineSurface>geom.clone();
+        if(aobject.hasOwnProperty('u_knots_to_add')) {
+          result.refineKnotsU(aobject.u_knots_to_add);
+        }
+        if(aobject.hasOwnProperty('v_knots_to_add')) {
+          result.refineKnotsV(aobject.v_knots_to_add);
+        }
+
+        let [nrows1,ncols1] = (<BSplineSurface>geom).cpoints.shape;
+        let cpointsArr1 = (<BSplineSurface>geom)
+          .cpoints.clone().reshape([nrows1*ncols1,3]);
+
+        let [nrows2,ncols2] = (<BSplineSurface>result).cpoints.shape;
+        let cpointsArr2 = (<BSplineSurface>result)
+          .cpoints.clone().reshape([nrows2*ncols2,3]);
+
+        rndr.render3D([
+          {
+            mesh:(<BSplineSurface>geom).tessellate(),
+            points:cpointsArr1.toArray(),
+            targetGL : 1
+          },
+          {
+            mesh:(<BSplineSurface>result).tessellate(),
+            points:cpointsArr2.toArray(),
+            targetGL : 2
+          }
+        ]);
+      }
+      break;
+    case 'decompose_surf':
+      {
+        let result = <BSplineSurface>geom.clone();
+        let bezsrfs = result.decompose();
+        let traces : TessFormat3D[] = [];
+
+        let [nrows1,ncols1] = (<BSplineSurface>geom).cpoints.shape;
+        let cpointsArr1 = (<BSplineSurface>geom)
+          .cpoints.clone().reshape([nrows1*ncols1,3]);
+
+        traces.push({
+          mesh:(<BSplineSurface>geom).tessellate(),
+          points:cpointsArr1.toArray(),
+          targetGL : 1
+        });
+
+        let colors = [
+          0xf0453f,
+          0x004f3f,
+          0xf04f3f,
+          0xff450f,
+          0x0f450f
+        ]
+        bezsrfs.forEach((bezsrf,i) => {
+          let [nrows,ncols] = bezsrf.cpoints.shape;
+          let cpointsArr = bezsrf.cpoints.clone().reshape([nrows*ncols,3]);
+          traces.push({
+            mesh : bezsrf.tessellate(),
+            points : cpointsArr.toArray(),
+            targetGL : 2,
+            color : colors[i%colors.length]
+          });
+        })
+        rndr.render3D(traces);
       }
       break;
     }

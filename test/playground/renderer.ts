@@ -31,7 +31,9 @@ export interface TessFormat3D {
   mesh? : {
     vertices : TypedArray|number[];
     faces : TypedArray|number[];
-  }
+  },
+  color? : number,
+  targetGL? : 1|2
 }
 
 
@@ -117,7 +119,7 @@ function makeGL(canvas3:HTMLCanvasElement,width:number,height:number) : GL {
   orbitControls.enableDamping = true;
   orbitControls.dampingFactor = 0.25;
   orbitControls.enableZoom = true;
-  orbitControls.autoRotate = true;
+  orbitControls.autoRotate = false;
   orbitControls.autoRotateSpeed = 0.35;
 
   return {
@@ -197,14 +199,28 @@ export class Renderer {
     Plotly.newPlot(this.div, traces, this.plotlyLayout);
   }
 
-  render3D(tess:TessFormat3D) {
+  render3D(arrtess:TessFormat3D[]) {
+    for(let tess of arrtess) {
+      this.render3DSingle(tess);
+    }
+  }
+
+  render3DSingle(tess:TessFormat3D) {
+
+    let gl:GL;
+    if(tess.targetGL && tess.targetGL === 2) {
+      console.assert(this.gl2);
+      gl = this.gl2!;
+    } else {
+      gl = this.gl1;
+    }
 
     // Add geometry mesh
     if(tess.mesh) {
       let loader = new THREE.JSONLoader();
       let geometry = loader.parse(tess.mesh).geometry;
       var material = new THREE.MeshLambertMaterial({
-        color: 0x4444ff,
+        color: tess.color || 0x4444ff,
         side: THREE.DoubleSide,
         flatShading : false,
         transparent : true,
@@ -212,7 +228,7 @@ export class Renderer {
       });
       geometry.computeVertexNormals();
       let mesh = new THREE.Mesh(geometry, material);
-      this.gl1.scene.add(mesh);
+      gl.scene.add(mesh);
     }
 
     // Add points as sprites
@@ -223,11 +239,11 @@ export class Renderer {
       });
       let cpointMaterial = new THREE.PointsMaterial({
         size: 10, sizeAttenuation: false,
-        map: this.gl1.cpointSprite, alphaTest: 0.5, transparent: true });
+        map: gl.cpointSprite, alphaTest: 0.5, transparent: true });
       cpointMaterial.color.setHSL(1.0, 0.3, 0.7);
 
       let cpointParticles = new THREE.Points(cpointGeometry, cpointMaterial);
-      this.gl1.scene.add(cpointParticles);
+      gl.scene.add(cpointParticles);
     }
 
     if(tess.line) {
@@ -242,13 +258,13 @@ export class Renderer {
       let lineseg = new THREE.LineSegments(lineGeom, new THREE.LineBasicMaterial({
         color : 0xff0000, linewidth:2
       }));
-      this.gl1.scene.add(lineseg);
+      gl.scene.add(lineseg);
     }
 
-    let orbitControls = this.gl1.orbitControls;
-    let glrndr = this.gl1.glrndr;
-    let scene = this.gl1.scene;
-    let camera = this.gl1.camera;
+    let orbitControls = gl.orbitControls;
+    let glrndr = gl.glrndr;
+    let scene = gl.scene;
+    let camera = gl.camera;
 
     var render = function () {
       orbitControls.update();
