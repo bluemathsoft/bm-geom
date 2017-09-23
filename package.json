@@ -39,7 +39,7 @@
     "select2": "^4.0.3",
     "source-map-loader": "^0.2.1",
     "three": "^0.87.1",
-    "three-orbitcontrols-ts": "^0.1.2",
+    "three-orbitcontrols-ts": "github:bluemathsoft/three-orbitcontrols-ts",
     "typedoc": "^0.8.0",
     "typescript": "^2.5.2",
     "webpack": "^3.6.0"
