@@ -22,10 +22,10 @@
 
 import {                                                                                                                                                      
   findSpan, getBasisFunction, getBasisFunctionDerivatives,
-  bernstein, blossom
+  bernstein, blossom, arePointsColinear
 } from './helper'
 import {
-  EPSILON, NDArray,iszero, zeros, AABB, add, mul, arr, isequal
+  EPSILON, NDArray, zeros, AABB, add, mul, arr, isequal
 } from '@bluemath/common'
 
 export class BezierCurve {
@@ -154,14 +154,6 @@ export class BezierCurve {
   /**
    * Checks if this Bezier curve is approximately a straight line within
    * given tolerance.
-   * The check works by constructing a line between first and last control
-   * point and then finding the distance of other control points from this
-   * line. Instead of actually calculating the distance from the line, we
-   * do the check if the point lies on the line or not. This is done by 
-   * substituting the [x,y] coordinates of control point, into the equation
-   * of the line. If the result is zero within the tolerance value, then
-   * the control point lies on the line. If all control points lie on the line
-   * then the curve can be considered a straight line.
    */
   isLine(tolerance=1e-6) {
     if(this.dimension !== 2) {
@@ -170,23 +162,7 @@ export class BezierCurve {
     if(this.degree === 1) {
       return true;
     }
-    let x0 = this.cpoints.getN(0,0);
-    let y0 = this.cpoints.getN(0,1);
-    let xn = this.cpoints.getN(this.cpoints.length-1,0);
-    let yn = this.cpoints.getN(this.cpoints.length-1,1);
-    let A = yn-y0;
-    let B = xn-x0;
-    for(let i=1; i<this.cpoints.length-1; i++) {
-      let x = this.cpoints.getN(i,0);
-      let y = this.cpoints.getN(i,1);
-      // From the equation of the line of the form
-      // y-mx-c = 0
-      let value = y - (A/B)*x - (y0-(A/B)*x0);
-      if(!iszero(value,tolerance)) {
-        return false;
-      }
-    }
-    return true;
+    return arePointsColinear(this.cpoints, tolerance);
   }
 
   // Experimental. WIP
@@ -479,9 +455,38 @@ export class BSplineCurve {
     return Nip;
   }
 
+  private static tessBSpline(bcrv:BSplineCurve, tolerance:number) : number[] {
+    if(bcrv.isLine(tolerance)) {
+      return [
+        bcrv.cpoints.getA(0).toArray(),
+        bcrv.cpoints.getA(bcrv.cpoints.length-1).toArray()
+      ];
+    } else {
+      let [left,right] = bcrv.split(0.5);
+      let tessLeft = BSplineCurve.tessBSpline(left, tolerance);
+      let tessRight = BSplineCurve.tessBSpline(right, tolerance);
+      // last point of tessLeft must be same as first point of tessRight
+      tessLeft.pop();
+      return tessLeft.concat(tessRight);
+    }
+  }
+
   tessellateAdaptive(tolerance=EPSILON) : NDArray {
-    tolerance;
-    return this.tessellate(100); // TODO
+    return new NDArray(BSplineCurve.tessBSpline(this, tolerance));
+  }
+
+  /**
+   * Checks if this Bezier curve is approximately a straight line within
+   * given tolerance.
+   */
+  isLine(tolerance=1e-6) {
+    if(this.dimension !== 2) {
+      throw new Error("isFlat check only supported for 2D Bezier curves");
+    }
+    if(this.degree === 1) {
+      return true;
+    }
+    return arePointsColinear(this.cpoints, tolerance);
   }
 
   /**

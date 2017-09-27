@@ -313,6 +313,41 @@ function intersectLineSegLineSeg3D(
   return null;
 }
 
+/**
+ * The check works by constructing a line between first and last control
+ * point and then finding the distance of other control points from this
+ * line. Instead of actually calculating the distance from the line, we
+ * do the check if the point lies on the line or not. This is done by 
+ * substituting the [x,y] coordinates of control point, into the equation
+ * of the line. If the result is zero within the tolerance value, then
+ * the control point lies on the line. If all control points lie on the line
+ * then the curve can be considered a straight line.
+ * @param points Array of points in 2D coord
+ * @param tolerance Tolerance within which a group of points is co-linear
+ */
+function arePointsColinear(points:NDArray, tolerance:number) {
+  if(points.shape.length !== 2 || points.shape[1] !== 2) {
+    throw new Error('points should be an array of points in 2D coord');
+  }
+  let x0 = points.getN(0,0);
+  let y0 = points.getN(0,1);
+  let xn = points.getN(points.length-1,0);
+  let yn = points.getN(points.length-1,1);
+  let A = yn-y0;
+  let B = xn-x0;
+  for(let i=1; i<points.length-1; i++) {
+    let x = points.getN(i,0);
+    let y = points.getN(i,1);
+    // From the equation of the line of the form
+    // y-mx-c = 0
+    let value = y - (A/B)*x - (y0-(A/B)*x0);
+    if(!iszero(value,tolerance)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export {
   bernstein,
   findSpan,
@@ -320,5 +355,6 @@ export {
   getBasisFunctionDerivatives,
   blossom,
   planeFrom3Points,
-  intersectLineSegLineSeg3D
+  intersectLineSegLineSeg3D,
+  arePointsColinear
 }

@@ -129,7 +129,7 @@ function genBSplineCurveTess(bcrv:BSplineCurve) {
 }
 
 function genBSplinePlotTraces(bcrv:BSplineCurve,axes=['x1','y1']) {
-  let tess = bcrv.tessellate(RESOLUTION);
+  let tess = bcrv.tessellateAdaptive(0.01);
   return [
     {
       x: Array.from(tess.getA(':',0).data),
