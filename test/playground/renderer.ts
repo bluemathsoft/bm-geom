@@ -171,6 +171,8 @@ export class Renderer {
       this.plotlyLayout.margin = { t:0, b:0, l:0, r:0 };
     } else {
       this.plotlyLayout = {};
+      this.plotlyLayout.xaxis = {anchor:'y1'};
+      this.plotlyLayout.yaxis = {};
     }
   }
 
@@ -192,9 +194,13 @@ export class Renderer {
   render2D(traces:any,range?:{x:number[],y:number[]}) {
     if(range) {
       this.plotlyLayout.xaxis.range = range.x;
-      this.plotlyLayout.xaxis2.range = range.x;
       this.plotlyLayout.yaxis.range = range.y;
-      this.plotlyLayout.yaxis2.range = range.y;
+      if(this.plotlyLayout.xaxis2) {
+        this.plotlyLayout.xaxis2.range = range.x;
+      }
+      if(this.plotlyLayout.yaxis2) {
+        this.plotlyLayout.yaxis2.range = range.y;
+      }
     }
     Plotly.newPlot(this.div, traces, this.plotlyLayout);
   }
