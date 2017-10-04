@@ -751,6 +751,15 @@ export const DATA = [
           "actiontype" : "decompose_surf",
           "input" : "Simple BSurf 2"
         }
+      },
+      {
+        "name" : "Split Simple BSurf 2 at uk",
+        "type" : "Action",
+        "object" : {
+          "actiontype" : "split_u_surf",
+          "input" : "Simple BSurf 2",
+          "u_split" : 0.6
+        }
       }
     ]
   }

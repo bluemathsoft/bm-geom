@@ -24,7 +24,7 @@ import {
   bernstein, planeFrom3Points
 } from './helper'
 import {
-  NDArray,zeros,arr,add,dot,mul,dir,count,empty,iszero,AABB,
+  NDArray,zeros,arr,add,dot,mul,dir,count,empty,iszero,AABB,isequal,
   EPSILON
 } from '@bluemath/common'
 
@@ -275,6 +275,20 @@ class BSplineSurface {
     return true;
   }
 
+  setUKnots(u_knots:NDArray) {
+    if(!this.u_knots.isShapeEqual(u_knots)) {
+      throw new Error('Invalid U knot vector length');
+    }
+    this.u_knots = u_knots;
+  }
+
+  setVKnots(v_knots:NDArray) {
+    if(!this.v_knots.isShapeEqual(v_knots)) {
+      throw new Error('Invalid V knot vector length');
+    }
+    this.v_knots = v_knots;
+  }
+
   evaluate(u:number, v:number, tess:NDArray, uidx:number, vidx:number) {
     let u_span = findSpan(this.u_degree, this.u_knots.data, u);
     let v_span = findSpan(this.v_degree, this.v_knots.data, v);
@@ -350,6 +364,89 @@ class BSplineSurface {
     uk;vk;
     return [];
   }
+
+  splitU(uk:number) {
+    let r = this.u_degree;
+    // Count number of times uk already occurs in the u-knot vector
+    // We have to add uk until it occurs p-times in the u-knot vector,
+    // where p is the u-degree of the curve
+    // In case there are knots in the u-knot vector that are equal to uk,
+    // within the error tolerance, then we replace those knots with uk
+    // Such u-knot vector is named safe_uknots.
+    let safe_uknots = [];
+
+    for(let i=0; i<this.u_knots.data.length; i++) {
+      if(isequal(this.u_knots.getN(i), uk)) {
+        safe_uknots.push(uk);
+        r--;
+      } else {
+        safe_uknots.push(this.u_knots.getN(i));
+      }
+    }
+
+    let add_uknots = [];
+    for(let i=0; i<r; i++) {
+      add_uknots.push(uk);
+    }
+
+    let copy = this.clone();
+    copy.setUKnots(arr(safe_uknots));
+    copy.refineKnotsU(add_uknots);
+
+    // Find the index of the first uk knot in the new knot vector
+    let ibreak = -1;
+    for(let i=0; i<copy.u_knots.data.length; i++) {
+      if(isequal(copy.u_knots.getN(i), uk)) {
+        ibreak = i;
+        break;
+      }
+    }
+    console.assert(ibreak >= 0);
+
+    // The U-control point of the surface where the split will happen is
+    // at the index ibreak-1 in the U-control points array
+    // The left surface will have ibreak U-control points
+    // The right surface will have N-ibreak+1 u-control points
+    // (where N is the number of U-control points in the original surface)
+    // The control point at ibreak-1 will be repeated in left and right
+    // surfaces. It will be the last u-control point of the left surface
+    // and first u-control point of the right surface
+
+    let lcpoints = copy.cpoints.getA(':'+ibreak,':');
+    let rcpoints = copy.cpoints.getA((ibreak-1)+':',':');
+
+    let l_uknots = copy.u_knots.getA(':'+ibreak).toArray();
+    // Scale the internal u knots values, to fit into the left surface's
+    // 0-1 u parameter range
+    for(let i=copy.u_degree+1; i<l_uknots.length; i++) {
+      l_uknots[i] = l_uknots[i]/uk;
+    }
+
+    // Append clamped knots to the left curve at 1
+    for(let i=0; i<=copy.u_degree; i++) {
+      l_uknots.push(1);
+    }
+
+    let r_uknots = copy.u_knots.getA((ibreak+copy.u_degree)+':').toArray()
+    // Scale the internal knot values, to fit into the right surface's
+    // 0-1 u parameter range
+    for(let i=0; i<r_uknots.length-copy.u_degree; i++) {
+      r_uknots[i] = (r_uknots[i]-uk)/(1-uk);
+    }
+    // Prepend clamped knots to the right curve at 0
+    for(let i=0; i<=copy.u_degree; i++) {
+      r_uknots.unshift(0);
+    }
+
+    // TODO : Rational
+    let lsurf = new BSplineSurface(
+      copy.u_degree, copy.v_degree, l_uknots, copy.v_knots, lcpoints);
+    let rsurf = new BSplineSurface(
+      copy.u_degree, copy.v_degree, r_uknots, copy.v_knots, rcpoints);
+
+    return [lsurf,rsurf];
+  }
+
 
   /**
    * Inserts knot un in the U knot vector r-times

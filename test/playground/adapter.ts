@@ -397,6 +397,45 @@ export class ActionAdapter {
         rndr.render3D(traces);
       }
       break;
+    
+    case 'split_u_surf':
+      {
+        let result = <BSplineSurface>geom.clone();
+        let surfs = result.splitU(aobject.u_split);
+        let traces : TessFormat3D[] = [];
+
+        let [nrows1,ncols1] = (<BSplineSurface>geom).cpoints.shape;
+        let cpointsArr1 = (<BSplineSurface>geom)
+          .cpoints.clone().reshape([nrows1*ncols1,3]);
+
+        traces.push({
+          mesh:(<BSplineSurface>geom).tessellate(),
+          points:cpointsArr1.toArray(),
+          targetGL : 1
+        });
+
+        let colors = [
+          0xf0453f,
+          0x004f3f,
+          0xf04f3f,
+          0xff450f,
+          0x0f450f
+        ]
+
+        surfs.forEach((bsrf, i) => {
+          let [nrows,ncols] = bsrf.cpoints.shape;
+          let cpointsArr = bsrf.cpoints.clone().reshape([nrows*ncols,3]);
+          traces.push({
+            mesh : bsrf.tessellate(),
+            points : cpointsArr.toArray(),
+            targetGL : 2,
+            color : colors[i%colors.length]
+          });
+        });
+
+        rndr.render3D(traces);
+      }
+      break;
     }
 
   }
