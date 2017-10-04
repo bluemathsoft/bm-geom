@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
+    "start" : "http-server -p8008 -c-1",
     "build-test": "webpack --config webpack.test.config.js",
     "watch-test": "webpack --watch --config webpack.test.config.js",
     "build-visual": "webpack --config webpack.visual.config.js",
@@ -34,6 +35,7 @@
     "@types/select2": "^4.0.41",
     "@types/three": "^0.84.22",
     "awesome-typescript-loader": "^3.2.3",
+    "http-server": "^0.10.0",
     "jquery": "^3.2.1",
     "plotly.js": "^1.30.1",
     "select2": "^4.0.3",

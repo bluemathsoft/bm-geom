@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "chrome",
+        "request": "launch",
+        "name": "Geometry Playground",
+        "url": "http://localhost:8008/test/playground.html",
+        "webRoot": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch Program",
+        "program": "${workspaceRoot}/lib/index.js",
+        "outFiles": [
+          "${workspaceRoot}/out/**/*.js"
+        ]
+      }
+    ]
+  }
