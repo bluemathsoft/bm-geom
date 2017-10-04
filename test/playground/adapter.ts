@@ -399,9 +399,16 @@ export class ActionAdapter {
       break;
     
     case 'split_u_surf':
+    case 'split_v_surf':
       {
         let result = <BSplineSurface>geom.clone();
-        let surfs = result.splitU(aobject.u_split);
+        let surfs : BSplineSurface[] = [];
+        if(aobject.hasOwnProperty('u_split')) {
+          surfs = result.splitU(aobject.u_split);
+        }
+        if(aobject.hasOwnProperty('v_split')) {
+          surfs = result.splitV(aobject.v_split);
+        }
         let traces : TessFormat3D[] = [];
 
         let [nrows1,ncols1] = (<BSplineSurface>geom).cpoints.shape;

@@ -365,13 +365,16 @@ class BSplineSurface {
     return [];
   }
 
+  /**
+   * Split this BSplineSurface into two at uk, by refining u-knots
+   */
   splitU(uk:number) {
     let r = this.u_degree;
     // Count number of times uk already occurs in the u-knot vector
-    // We have to add uk until it occurs p-times in the u-knot vector,
-    // where p is the u-degree of the curve
-    // In case there are knots in the u-knot vector that are equal to uk,
-    // within the error tolerance, then we replace those knots with uk
+    // We have to add uk until it occurs r-times in the u-knot vector,
+    // where r is the u-degree of the curve
+    // In case there are knots in the u-knot vector that are equal to uk
+    // within the error tolerance, then we replace them with uk
     // Such u-knot vector is named safe_uknots.
     let safe_uknots = [];
 
@@ -403,12 +406,13 @@ class BSplineSurface {
     }
     console.assert(ibreak >= 0);
 
-    // The U-control point of the surface where the split will happen is
-    // at the index ibreak-1 in the U-control points array
-    // The left surface will have ibreak U-control points
-    // The right surface will have N-ibreak+1 u-control points
-    // (where N is the number of U-control points in the original surface)
-    // The control point at ibreak-1 will be repeated in left and right
+    // The U-control points of the surface where the split will happen are
+    // at the index *ibreak-1* in the U-direction of control points array
+    // The left surface will have *ibreak* u-control point rows
+    // The right surface will have *N-ibreak+1* u-control point rows
+    // (where N is the number of control points rows in U direction
+    // in the original surface)
+    // The control point at *ibreak-1* will be repeated in left and right
     // surfaces. It will be the last u-control point of the left surface
     // and first u-control point of the right surface
 
@@ -541,6 +545,92 @@ class BSplineSurface {
     }
     this.cpoints = Q
     this.v_knots = VQ
+  }
+
+  /**
+   * Split this BSplineSurface into two at vk, by refining v-knots
+   */
+  splitV(vk:number) {
+    let r = this.v_degree;
+    // Count number of times vk already occurs in the v-knot vector
+    // We have to add vk until it occurs r-times in the v-knot vector,
+    // where r is the v-degree of the curve
+    // In case there are knots in the v-knot vector that are equal to vk
+    // within the error tolerance, then we replace them with vk
+    // Such v-knot vector is named safe_vknots
+    let safe_vknots = [];
+
+    for(let i=0; i<this.v_knots.data.length; i++) {
+      if(isequal(this.v_knots.getN(i), vk)) {
+        safe_vknots.push(vk);
+        r--;
+      } else {
+        safe_vknots.push(this.v_knots.getN(i));
+      }
+    }
+
+    let add_vknots = [];
+    for(let i=0; i<r; i++) {
+      add_vknots.push(vk);
+    }
+
+    let copy = this.clone();
+    copy.setVKnots(arr(safe_vknots));
+    copy.refineKnotsV(add_vknots);
+
+    // Find the index of the first vk knot in the new knot vector
+    let ibreak = -1;
+    for(let i=0; i<copy.v_knots.data.length; i++) {
+      if(isequal(copy.v_knots.getN(i), vk)) {
+        ibreak = i;
+        break;
+      }
+    }
+    console.assert(ibreak >= 0);
+
+    // The V-control points of the surface where the split will happen are
+    // at the index *ibreak-1* in the V-direction of control points array
+    // The left surface will have *ibreak* v-control point columns
+    // The right surface will have *N-ibreak+1* v-control point columns 
+    // (where N is the number of control points rows in V direction
+    // in the original surface)
+    // The control point at *ibreak-1* will be repeated in left and right
+    // surfaces. It will be the last v-control point of the left surface
+    // and first v-control point of the right surface
+
+    let lcpoints = copy.cpoints.getA(':',':'+ibreak);
+    let rcpoints = copy.cpoints.getA(':',(ibreak-1)+':');
+
+    let l_vknots = copy.v_knots.getA(':'+ibreak).toArray();
+    // Scale the internal v knot values to fit into the left surface's 0-1
+    // v parameter range
+    for(let i=copy.v_degree+1; i<l_vknots.length; i++) {
+      l_vknots[i] = l_vknots[i]/vk;
+    }
+
+    // Append clamped knots to the left curve at 1
+    for(let i=0; i<=copy.v_degree; i++) {
+      l_vknots.push(1);
+    }
+
+    let r_vknots = copy.v_knots.getA((ibreak+copy.v_degree)+':').toArray();
+    // Scale the internal knot values to fit into the right surface's
+    // 0-1 v parameter range
+    for(let i=0; i<r_vknots.length-copy.v_degree; i++) {
+      r_vknots[i] = (r_vknots[i]-vk)/(1-vk);
+    }
+    // Prepend clamped knots to the right curve at 0
+    for(let i=0; i<=copy.v_degree; i++) {
+      r_vknots.unshift(0);
+    }
+
+    // TODO : Rational
+    let lsurf = new BSplineSurface(
+      copy.u_degree, copy.v_degree, copy.u_knots, l_vknots, lcpoints);
+    let rsurf = new BSplineSurface(
+      copy.u_degree, copy.v_degree, copy.u_knots, r_vknots, rcpoints);
+
+    return [lsurf,rsurf];
   }
 
   /**

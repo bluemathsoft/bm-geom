@@ -760,6 +760,15 @@ export const DATA = [
           "input" : "Simple BSurf 2",
           "u_split" : 0.6
         }
+      },
+      {
+        "name" : "Split Simple BSurf 2 at vk",
+        "type" : "Action",
+        "object" : {
+          "actiontype" : "split_v_surf",
+          "input" : "Simple BSurf 2",
+          "v_split" : 0.6
+        }
       }
     ]
   }
