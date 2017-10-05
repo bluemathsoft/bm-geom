@@ -956,23 +956,23 @@ class BSplineSurface {
 
     while(b<mU) {
       let i = b;
-      while(b<mU && U.get(b+1) === U.get(b)) {
+      while(b<mU && isequal(U.getN(b+1), U.getN(b))) { // isequal ok?
         b += 1;
       }
       let mult = b-i+1;
       if(mult < p) {
-        let numerator = <number>U.get(b) - <number>U.get(a); // Numerator of alpha
+        let numerator = U.getN(b) - U.getN(a); // Numerator of alpha
 
         // Compute and store alphas
         for(let j=p; j>mult; j--) {
-          alphas.set(j-mult-1, numerator/(<number>U.get(a+j)-<number>U.get(a)));
+          alphas.set(j-mult-1, numerator/(U.getN(a+j)-U.getN(a)));
         }
         let r = p-mult; // Insert knot r times
         for(let j=1; j<r+1; j++) {
           let save = r-j;
           let s = mult+j;
           for(let k=p; k>s-1; k--) {
-            let alpha = <number>alphas.get(k-s);
+            let alpha = alphas.getN(k-s);
             for(let row=0; row<nV+1; row++) {
               Q.set(nb,k,row,
                 add(
@@ -1028,23 +1028,23 @@ class BSplineSurface {
 
     while(b<mV) {
       let i = b;
-      while(b<mV && V.get(b+1) === V.get(b)) {
+      while(b<mV && isequal(V.getN(b+1), V.getN(b))) {
         b += 1;
       }
       let mult = b-i+1;
       if(mult < q) {
-        let numerator = <number>V.get(b) - <number>V.get(a); // Numerator of alpha
+        let numerator = V.getN(b) - V.getN(a); // Numerator of alpha
 
         // Compute and store alphas
         for(let j=q; j>mult; j--) {
-          alphas.set(j-mult-1, numerator/(<number>V.get(a+j)-<number>V.get(a)));
+          alphas.set(j-mult-1, numerator/(V.getN(a+j)-V.getN(a)));
         }
         let r = q-mult; // Insert knot r times
         for(let j=1; j<r+1; j++) {
           let save = r-j;
           let s = mult+j;
           for(let k=q; k>s-1; k--) {
-            let alpha = <number>alphas.get(k-s);
+            let alpha = alphas.getN(k-s);
             for(let col=0; col<nU+1; col++) {
               Q.set(nb,col,k,
                 add(

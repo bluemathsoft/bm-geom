@@ -771,6 +771,14 @@ export const DATA = [
         }
       },
       {
+        "name" : "Decompose Simple BSurf 1",
+        "type" : "Action",
+        "object" : {
+          "actiontype" : "decompose_surf",
+          "input" : "Simple BSurf 1"
+        }
+      },
+      {
         "name" : "Decompose Simple BSurf 2",
         "type" : "Action",
         "object" : {
