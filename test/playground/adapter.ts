@@ -22,7 +22,7 @@ along with bluemath. If not, see <http://www.gnu.org/licenses/>.
 import {
   BezierCurve, BSplineCurve, BezierSurface, BSplineSurface,
   LineSegment, CircleArc, Circle,
-  BilinearSurface, GeneralCylinder
+  BilinearSurface, GeneralCylinder, Cylinder
 } from '../../src/nurbs'
 import {
   CoordSystem
@@ -106,6 +106,10 @@ function buildGeometry(data:any, type:string,
       console.assert(false);
     }
     return new GeneralCylinder(curve!, data.direction, data.height);
+  case "Cylinder":
+    return new Cylinder(
+      new CoordSystem(data.coord.origin,data.coord.x,data.coord.z),
+      data.radius, data.height);
   default:
     throw new Error('Not implemented');
   }
@@ -214,6 +218,7 @@ export class GeometryAdapter {
     case 'BSurf':
     case 'BilinearSurface':
     case 'GeneralCylinder':
+    case 'Cylinder':
       let [nrows,ncols] = (<BSplineSurface>geom).cpoints.shape;
       let cpointsArr = (<BSplineSurface>geom)
         .cpoints.clone().reshape([nrows*ncols,3]);

@@ -591,6 +591,32 @@ export const DATA = [
           "height" : 2
         }
       },
+      {
+        "name" : "Cylinder 1",
+        "type" : "Cylinder",
+        "object" : {
+          "coord" : {
+            origin : [0,0,0],
+            x : [1,0,0],
+            z : [0,1,0]
+          },
+          "radius" : 2,
+          "height" : 4
+        }
+      },
+      {
+        "name" : "Cylinder 2",
+        "type" : "Cylinder",
+        "object" : {
+          "coord" : {
+            origin : [0,0,0],
+            x : [1,0,0],
+            z : [0,0,1]
+          },
+          "radius" : 2,
+          "height" : 4
+        }
+      },
     ]
   },
   {

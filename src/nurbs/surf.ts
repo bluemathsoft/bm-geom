@@ -21,7 +21,9 @@
 
 import {BSplineSurface} from './bsurf'
 import {BSplineCurve} from './bcurve'
+import {Circle} from './curve'
 import {arr,add,mul,NDArray} from '@bluemath/common'
+import {CoordSystem} from '..'
 
 export class BilinearSurface extends BSplineSurface {
 
@@ -35,11 +37,12 @@ export class BilinearSurface extends BSplineSurface {
 
 export class GeneralCylinder extends BSplineSurface {
 
-  constructor(curve:BSplineCurve, direction:number[], height:number) {
+  constructor(curve:BSplineCurve, direction:NDArray|number[], height:number) {
 
+    let dir = direction instanceof NDArray ? direction : arr(direction);
     let cpoints0 = curve.cpoints.toArray();
     let cpoints1 = cpoints0.map((cpoint:number[]) => {
-      let cp1 = <NDArray>add(arr(cpoint), mul(arr(direction),height));
+      let cp1 = <NDArray>add(arr(cpoint), mul(dir,height));
       return cp1.toArray();
     });
     let cpoints = [];
@@ -59,6 +62,11 @@ export class GeneralCylinder extends BSplineSurface {
 }
 
 export class Cylinder extends GeneralCylinder {
+
+  constructor(coordsys:CoordSystem, radius:number, height:number) {
+    let circle = new Circle(coordsys, radius);
+    super(circle,coordsys.z,height);
+  }
 
 }
 
