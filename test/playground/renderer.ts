@@ -33,7 +33,7 @@ export interface TessFormat3D {
     faces : TypedArray|number[];
   },
   color? : number,
-  targetGL? : 1|2
+  targetGL? : number
 }
 
 

@@ -25,7 +25,7 @@ import {
 } from './helper'
 import {
   NDArray,zeros,arr,add,dot,mul,dir,count,empty,iszero,AABB,isequal,
-  EPSILON
+  EPSILON, TypedArray
 } from '@bluemath/common'
 
 class BezierSurface {
@@ -242,7 +242,7 @@ class BSplineSurface {
     return !!this.weights;
   }
 
-  isFlat(tolerance=1) {
+  isFlat(tolerance=EPSILON) {
     let nU = this.cpoints.shape[0];
     let nV = this.cpoints.shape[1];
     let p00 = this.cpoints.getA(0,0);
@@ -345,24 +345,22 @@ class BSplineSurface {
     return {vertices:tessPoints.data,faces};
   }
 
-  tessellatePointsAdaptive(tolerance=EPSILON) {
-    let tessGrid = [];
-    if(this.isFlat(100*tolerance)) {
-      tessGrid.push(this.tessellatePoints(10));
+  static tessellateRecursive(bsrf:BSplineSurface, tolerance=EPSILON) {
+    let tessArr:{vertices:TypedArray,faces:number[]}[] = [];
+
+    if(bsrf.isFlat(tolerance)) {
+      tessArr.push(bsrf.tessellate(10));
     } else {
-      /*
-      let subgrid = this.split(0.5,0.5);
-      for(surf of subgrid) {
-        tessGrid.push(surf.tessellatePoints(10));
+      for(let surf of bsrf.splitUV(0.5,0.5)) {
+        tessArr = tessArr.concat(
+          BSplineSurface.tessellateRecursive(surf,tolerance));
       }
-      */
     }
-    return tessGrid;
+    return tessArr;
   }
 
-  split(uk:number, vk:number) {
-    uk;vk;
-    return [];
+  tessellateAdaptive(tolerance=EPSILON) {
+    return BSplineSurface.tessellateRecursive(this,tolerance);
   }
 
   /**

@@ -31,6 +31,21 @@ import {arr,NDArray, AABB} from '@bluemath/common'
 import {Renderer,TessFormat3D} from './renderer'
 
 const RESOLUTION = 100;
+const COLORS = [
+  0xff3333,
+  0x33ff33,
+  0x3333ff,
+  0xffff33,
+  0xff33ff,
+  0x33ffff,
+  0x777733,
+  0x773377,
+  0x337777,
+  0x773333,
+  0x337733,
+  0x333377,
+];
+
 
 function buildGeometry(data:any, type:string,
   DATA_MAP:any, nameToKey:(s:string)=>string)
@@ -428,15 +443,6 @@ export class ActionAdapter {
           targetGL : 1
         });
 
-        let colors = [
-          0xff3333,
-          0x33ff33,
-          0x3333ff,
-          0xffff33,
-          0xff33ff,
-          0x33ffff
-        ]
-
         surfs.forEach((bsrf, i) => {
           let [nrows,ncols] = bsrf.cpoints.shape;
           let cpointsArr = bsrf.cpoints.clone().reshape([nrows*ncols,3]);
@@ -444,12 +450,28 @@ export class ActionAdapter {
             mesh : bsrf.tessellate(),
             points : cpointsArr.toArray(),
             targetGL : 2,
-            color : colors[i%colors.length]
+            color : COLORS[i%COLORS.length]
           });
         });
 
         rndr.render3D(traces);
       }
+      break;
+    case 'tess_adaptive_bsurf':
+      {
+        let traces = (<BSplineSurface>geom)
+          .tessellateAdaptive().map((tessData,i) => {
+            return {
+              mesh : tessData,
+              targetGL : 1,
+              color : COLORS[i%COLORS.length]
+            }
+          });
+        rndr.render3D(traces);
+      }
+      break;
+    default:
+      console.assert(false);
       break;
     }
 

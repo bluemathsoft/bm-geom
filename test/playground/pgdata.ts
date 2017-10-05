@@ -779,6 +779,22 @@ export const DATA = [
           "u_split" : 0.5,
           "v_split" : 0.6
         }
+      },
+      {
+        "name" : "Tessellate Simple BSurf 1 adaptively",
+        "type" : "Action",
+        "object" : {
+          "actiontype" : "tess_adaptive_bsurf",
+          "input" : "Simple BSurf 1"
+        }
+      },
+      {
+        "name" : "Tessellate Simple BSurf 2 adaptively",
+        "type" : "Action",
+        "object" : {
+          "actiontype" : "tess_adaptive_bsurf",
+          "input" : "Simple BSurf 2"
+        }
       }
     ]
   }
