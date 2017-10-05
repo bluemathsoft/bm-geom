@@ -400,14 +400,21 @@ export class ActionAdapter {
     
     case 'split_u_surf':
     case 'split_v_surf':
+    case 'split_uv_surf':
       {
         let result = <BSplineSurface>geom.clone();
         let surfs : BSplineSurface[] = [];
-        if(aobject.hasOwnProperty('u_split')) {
-          surfs = result.splitU(aobject.u_split);
-        }
-        if(aobject.hasOwnProperty('v_split')) {
-          surfs = result.splitV(aobject.v_split);
+        if(aobject.hasOwnProperty('u_split') &&
+          aobject.hasOwnProperty('v_split'))
+        {
+          surfs = result.splitUV(aobject.u_split,aobject.v_split);
+        } else {
+          if(aobject.hasOwnProperty('u_split')) {
+            surfs = result.splitU(aobject.u_split);
+          }
+          if(aobject.hasOwnProperty('v_split')) {
+            surfs = result.splitV(aobject.v_split);
+          }
         }
         let traces : TessFormat3D[] = [];
 
@@ -422,11 +429,12 @@ export class ActionAdapter {
         });
 
         let colors = [
-          0xf0453f,
-          0x004f3f,
-          0xf04f3f,
-          0xff450f,
-          0x0f450f
+          0xff3333,
+          0x33ff33,
+          0x3333ff,
+          0xffff33,
+          0xff33ff,
+          0x33ffff
         ]
 
         surfs.forEach((bsrf, i) => {
