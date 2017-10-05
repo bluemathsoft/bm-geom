@@ -854,7 +854,7 @@ class BSplineSurface {
     for(let j=0; j<a+1; j++) {
       Vbar.set(j, V.get(j));
     }
-    for(let j=b+p; j<mV+1; j++) {
+    for(let j=b+q; j<mV+1; j++) {
       Vbar.set(j+r+1, V.get(j));
     }
 
@@ -863,7 +863,7 @@ class BSplineSurface {
 
     // Copy unaltered control points (corresponding to u<a and u>b)
     for(let col=0; col<nU+1; col++) {
-      for(let k=0; k<a-p+1; k++) {
+      for(let k=0; k<a-q+1; k++) {
         Q.set(col,k, P.get(col,k));
       }
       for(let k=b-1; k<nV+1; k++) {
@@ -871,32 +871,32 @@ class BSplineSurface {
       }
     }
 
-    let i = b+p-1;
-    let k = b+p+r;
+    let i = b+q-1;
+    let k = b+q+r;
 
     for(let j=r; j>=0; j--) {
-      while(X[j] <= U.get(i) && i>a) {
+      while(X[j] <= V.get(i) && i>a) {
         Vbar.set(k, V.get(i));
         for(let col=0; col<nU+1; col++) {
-          Q.set(col, k-p-1, P.get(col, i-p-1));
+          Q.set(col, k-q-1, P.get(col, i-q-1));
         }
         k -= 1;
         i -= 1;
       }
 
       for(let col=0; col<nU+1; col++) {
-        Q.set(col, k-p-1, Q.get(col, k-p));
+        Q.set(col, k-q-1, Q.get(col, k-q));
       }
 
-      for(let l=1; l<p+1; l++) {
-        let ind = k-p+l;
+      for(let l=1; l<q+1; l++) {
+        let ind = k-q+l;
         let alpha = <number>Vbar.get(k+l)-X[j];
         if(iszero(alpha)) {
           for(let col=0; col<nU+1; col++) {
             Q.set(col,ind-1, Q.get(col,ind));
           }
         } else {
-          alpha = alpha/(<number>Vbar.get(k+l)-<number>V.get(i-p+l));
+          alpha = alpha/(Vbar.getN(k+l)-V.getN(i-q+l));
           for(let col=0; col<nU+1; col++) {
             Q.set(col,ind-1,
               add(
