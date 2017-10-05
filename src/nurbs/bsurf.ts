@@ -993,7 +993,7 @@ class BSplineSurface {
       if(b<mU) { // Initialize for next segment
         for(let i=p-mult; i<p+1; i++) {
           for(let row=0; row<nV+1; row++) {
-            Q.set(nb,i,row, P.get(b-p+1,row));
+            Q.set(nb,i,row, P.get(b-p+i,row));
           }
         }
         a = b
@@ -1065,7 +1065,7 @@ class BSplineSurface {
       if(b<mV) { // Initialize next segment
         for(let i=q-mult; i<q+1; i++) {
           for(let col=0; col<nU+1; col++) {
-            Q.set(nb,col,i, P.get(col,b-p+i));
+            Q.set(nb,col,i, P.get(col,b-q+i));
           }
         }
         a = b;
