@@ -107,6 +107,9 @@ export class BezierCurve {
     }
   }
 
+  /**
+   * Tessellate the Bezier curve uniformly at given resolution
+   */
   tessellate(resolution=10) : NDArray {
     let tess = new NDArray({
       shape:[resolution+1,this.dimension],
@@ -145,7 +148,7 @@ export class BezierCurve {
   }
 
   /**
-   * Compute adaptive tessellation of the curve
+   * Tessellate bezier curve adaptively, within given tolerance of error
    */
   tessellateAdaptive(tolerance=EPSILON) : NDArray {
     return new NDArray(BezierCurve.tessBezier(this, tolerance));
@@ -165,21 +168,10 @@ export class BezierCurve {
     return arePointsColinear(this.cpoints, tolerance);
   }
 
-  // Experimental. WIP
-  computeZeroCurvatureLocations() {
-    if(this.degree !== 3) {
-      throw new Error("This mathod only supports only cubic bezier curves");
-    }
-    // let [x0,y0] = (<NDArray>this.cpoints.get(0)).data;
-    // let [x1,y1] = (<NDArray>this.cpoints.get(1)).data;
-    // let [x2,y2] = (<NDArray>this.cpoints.get(2)).data;
-    // let [x3,y3] = (<NDArray>this.cpoints.get(3)).data;
-    // return [
-    //   (2/3) * (x0-3*x1+0.5*x2)/(x0-3*x1+3*x2-x3),
-    //   (2/3) * (y0-3*y1+0.5*y2)/(y0-3*y1+3*y2-y3),
-    // ]
-  }
-
+  /**
+   * Reparameterize the bezier curve within new parametric interval.
+   * It uses the blossoming technique.
+   */
   reparam(ua:number, ub:number) {
     let n = this.degree;
     let b = new NDArray({shape:this.cpoints.shape});
@@ -213,6 +205,9 @@ export class BezierCurve {
     );
   }
 
+  /**
+   * Split into two Bezier curves at given parametric value
+   */
   split(uk:number) : BezierCurve[] {
     let left = this.clone();
     let right = this.clone();
@@ -232,7 +227,7 @@ export class BezierCurve {
 }
 
 /**
- * @hidden
+ * Rational BSpline Curve
  */
 export class BSplineCurve {
 
@@ -257,11 +252,11 @@ export class BSplineCurve {
     }
     this.weights = weights;
 
-    /*                                                                                                                                                        
-     The degree p, number of control points n+1, number of knots m+1                                                                                          
-     are related by                                                                                                                                           
-     m = n + p + 1                                                                                                                                            
-     [The NURBS book, P3.1]                                                                                                                                   
+    /*
+     The degree p, number of control points n+1, number of knots m+1
+     are related by
+     m = n + p + 1
+     [The NURBS book, P3.1]
      */
     let p = degree;
     let m = knots.shape[0]-1;
@@ -269,10 +264,17 @@ export class BSplineCurve {
     console.assert(m === n+p+1);
   }
 
+  /**
+   * Determines how many dimension the curve occupies based on shape of
+   * Control points array
+   */
   get dimension() {
     return this.cpoints.shape[1];
   }
 
+  /**
+   * Convert 2D control points to 3D
+   */
   to3D() {
     if(this.dimension === 3) { return; }
     console.assert(this.dimension === 2);
@@ -364,6 +366,9 @@ export class BSplineCurve {
     
   }
 
+  /**
+   * Replace the knots of this BSplineCurve with new knots
+   */
   setKnots(knots:NDArray) {
     if(!this.knots.isShapeEqual(knots)) {
       throw new Error('Invalid knot vector length');
@@ -371,6 +376,9 @@ export class BSplineCurve {
     this.knots = knots;
   }
 
+  /**
+   * Set the knot at given index in the knot vector
+   */
   setKnot(index:number,knot:number) {
     if(index >= this.knots.shape[0] || index < 0) {
       throw new Error('Invalid knot index');
@@ -391,6 +399,9 @@ export class BSplineCurve {
     this.knots.set(index, knot);
   }
 
+  /**
+   * Set the weight at given index
+   */
   setWeight(index:number, weight:number) {
     if(!this.weights) {
       throw new Error('Not a Rational BSpline');
@@ -402,7 +413,8 @@ export class BSplineCurve {
   }
 
   /**
-   * Is this Rational BSpline Curve
+   * Is this Rational BSpline Curve. Determined based on whether weights
+   * were specified while constructing this BSplineCurve
    */
   isRational() : boolean {
     return !!this.weights;
@@ -411,17 +423,15 @@ export class BSplineCurve {
   /**
    * Evaluate basis function derivatives upto n'th
    */
-  evaluateBasisDerivatives(span:number, n:number, t:number)
-    : NDArray
-  {
+  private evaluateBasisDerivatives(span:number, n:number, t:number) : NDArray {
     return getBasisFunctionDerivatives(this.degree, t, span, this.knots, n);
   }
 
-  evaluateBasis(span:number, t:number) : number[] {
+  private evaluateBasis(span:number, t:number) : number[] {
     return getBasisFunction(this.degree, this.knots.data, span, t);
   }
 
-  findSpan(t:number) {
+  private findSpan(t:number) {
     return findSpan(this.degree, this.knots.data, t);
   }
 
@@ -440,6 +450,9 @@ export class BSplineCurve {
     return denominator;
   }
 
+  /**
+   * Tesselate basis functions uniformly at given resolution
+   */
   tessellateBasis(resolution=10) : NDArray {
     let n = this.cpoints.shape[0]-1;
     let p = this.degree;
@@ -799,6 +812,12 @@ export class BSplineCurve {
     return bezlist;
   }
 
+  /**
+   * Evaluate the BSplineCurve at given parameter value
+   * If `tess` parameter is provided then the evaluated value is
+   * placed in the `tess` array at index `tessidx`. Otherwise the single
+   * euclidean point is returned.
+   */
   evaluate(t:number, tess?:NDArray, tessidx?:number) : NDArray|null {
     let p = this.degree;
     let span = this.findSpan(t);
@@ -838,6 +857,12 @@ export class BSplineCurve {
     }
   }
 
+  /**
+   * Evaluate the derivative of BSplineCurve at given parameter value
+   * If `tess` parameter is provided then the evaluated value is
+   * placed in the `tess` array at index `tessidx`. Otherwise the single
+   * euclidean point is returned.
+   */
   evaluateDerivative(
     t:number, d:number, tess?:NDArray, tessidx?:number) : NDArray|null
   {
@@ -866,6 +891,9 @@ export class BSplineCurve {
     }
   }
 
+  /**
+   * Tessellate the BSplineCurve uniformly at given resolution
+   */
   tessellate(resolution=10) : NDArray {
     let tess = new NDArray({
       shape:[resolution+1,this.dimension],
@@ -877,6 +905,9 @@ export class BSplineCurve {
     return tess;
   }
 
+  /**
+   * Tessellate derivatives of BSplineCurve uniformly at given resolution
+   */
   tessellateDerivatives(resolution=10, d:number) : NDArray {
     let tess = new NDArray({
       shape:[resolution+1,d,this.dimension],
