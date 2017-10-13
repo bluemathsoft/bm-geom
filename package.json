@@ -12,6 +12,8 @@
     "watch-visual": "webpack --watch --config webpack.visual.config.js",
     "build-playground": "webpack --config webpack.playground.config.js",
     "watch-playground": "webpack --watch --config webpack.playground.config.js",
+    "build-docs": "rm -rf docs/* && typedoc --excludeExternals --excludeNotExported --excludePrivate --out ./docs --mode file --readme docindex.md",
+    "build-docs-prod": "rm -rf docs/* && typedoc --excludeNotExported --excludePrivate --out ./docs --mode file --gaID \"UA-99857402-1\" ",
     "prepare": "(cd src; tsc -p .)"
   },
   "repository": {

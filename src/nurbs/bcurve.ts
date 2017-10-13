@@ -20,7 +20,7 @@
 
 */
 
-import {                                                                                                                                                      
+import {
   findSpan, getBasisFunction, getBasisFunctionDerivatives,
   bernstein, blossom, arePointsColinear
 } from './helper'
@@ -28,6 +28,10 @@ import {
   EPSILON, NDArray, zeros, AABB, add, mul, arr, isequal
 } from '@bluemath/common'
 
+/**
+ * Rational or polynomial bezier curve
+ * If the weights are specified it's a rational Bezier curve
+ */
 export class BezierCurve {
   degree : number;
   cpoints : NDArray;
@@ -45,10 +49,17 @@ export class BezierCurve {
     this.weights = weights;
   }
 
+  /**
+   * Dimension of the curve. Typically 2D or 3D
+   */
   get dimension() {
     return this.cpoints.shape[1];
   }
 
+  /**
+   * If the control points are defined in 2D plane, then add z=0 to each
+   * of them to define them in 3D space
+   */
   to3D() {
     if(this.dimension === 3) { return; }
     console.assert(this.dimension === 2);
@@ -66,6 +77,10 @@ export class BezierCurve {
     return !!this.weights;
   }
 
+  /**
+   * Evaluate the Bezier curve at given parameter value
+   * Place the evaluated point in the `tess` array at `tessidx`
+   */
   evaluate(u:number, tess?:NDArray, tessidx?:number) {
     let B = bernstein(this.degree, u);
     let dim = this.dimension;
@@ -435,7 +450,7 @@ export class BSplineCurve {
     return findSpan(this.degree, this.knots.data, t);
   }
 
-  protected getTermDenominator(span:number, N:number[]) : number {
+  private getTermDenominator(span:number, N:number[]) : number {
     let p = this.degree;
 
     let denominator;
@@ -484,6 +499,9 @@ export class BSplineCurve {
     }
   }
 
+  /**
+   * Tessellate this BSplineCurve adaptively within given tolerance of error
+   */
   tessellateAdaptive(tolerance=EPSILON) : NDArray {
     return new NDArray(BSplineCurve.tessBSpline(this, tolerance));
   }
