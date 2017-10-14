@@ -1,4 +1,4 @@
-import { NDArray } from '@bluemath/common';
+import { NDArray, AABB, TypedArray } from '@bluemath/common';
 declare class BezierSurface {
     u_degree: number;
     v_degree: number;
@@ -10,9 +10,11 @@ declare class BezierSurface {
     evaluate(u: number, v: number, tess: NDArray, uidx: number, vidx: number): void;
     tessellatePoints(resolution?: number): NDArray;
     tessellate(resolution?: number): {
-        vertices: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
+        vertices: TypedArray;
         faces: number[];
     };
+    aabb(): AABB;
+    clone(): BezierSurface;
 }
 declare class BSplineSurface {
     u_degree: number;
@@ -36,16 +38,37 @@ declare class BSplineSurface {
     constructor(u_degree: number, v_degree: number, u_knots: NDArray | number[], v_knots: NDArray | number[], cpoints: NDArray | number[][][], weights?: NDArray | number[][]);
     readonly dimension: number;
     clone(): BSplineSurface;
+    aabb(): AABB;
     isRational(): boolean;
     isFlat(tolerance?: number): boolean;
+    setUKnots(u_knots: NDArray): void;
+    setVKnots(v_knots: NDArray): void;
     evaluate(u: number, v: number, tess: NDArray, uidx: number, vidx: number): void;
     tessellatePoints(resolution?: number): NDArray;
     tessellate(resolution?: number): {
-        vertices: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
+        vertices: TypedArray;
         faces: number[];
     };
-    tessellatePointsAdaptive(tolerance?: number): NDArray[];
-    split(uk: number, vk: number): never[];
+    static tessellateRecursive(bsrf: BSplineSurface, tolerance?: number): {
+        vertices: TypedArray;
+        faces: number[];
+    }[];
+    tessellateAdaptive(tolerance?: number): {
+        vertices: TypedArray;
+        faces: number[];
+    }[];
+    /**
+     * Split this BSplineSurface into two at uk, by refining u-knots
+     */
+    splitU(uk: number): BSplineSurface[];
+    /**
+     * Split this BSplineSurface into two at vk, by refining v-knots
+     */
+    splitV(vk: number): BSplineSurface[];
+    /**
+     * Split this BSplineSurface into four
+     */
+    splitUV(uk: number, vk: number): BSplineSurface[];
     /**
      * Inserts knot un in the U knot vector r-times
      * Ref: Algorithm A5.3 "The NURBS book"

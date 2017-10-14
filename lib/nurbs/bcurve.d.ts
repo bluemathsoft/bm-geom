@@ -1,16 +1,34 @@
 import { NDArray, AABB } from '@bluemath/common';
-import { CoordSystem } from '..';
+/**
+ * Rational or polynomial bezier curve
+ * If the weights are specified it's a rational Bezier curve
+ */
 export declare class BezierCurve {
     degree: number;
     cpoints: NDArray;
     weights?: NDArray;
     constructor(degree: number, cpoints: NDArray, weights?: NDArray);
+    /**
+     * Dimension of the curve. Typically 2D or 3D
+     */
     readonly dimension: number;
+    /**
+     * If the control points are defined in 2D plane, then add z=0 to each
+     * of them to define them in 3D space
+     */
+    to3D(): void;
     /**
      * Is this Rational Bezier Curve
      */
     isRational(): boolean;
+    /**
+     * Evaluate the Bezier curve at given parameter value
+     * Place the evaluated point in the `tess` array at `tessidx`
+     */
     evaluate(u: number, tess?: NDArray, tessidx?: number): null;
+    /**
+     * Tessellate the Bezier curve uniformly at given resolution
+     */
     tessellate(resolution?: number): NDArray;
     /**
      * The curve is subdivided into two curves at the mipoint of parameter
@@ -21,30 +39,29 @@ export declare class BezierCurve {
      */
     private static tessBezier(bezcrv, tolerance);
     /**
-     * Compute adaptive tessellation of the curve
+     * Tessellate bezier curve adaptively, within given tolerance of error
      */
     tessellateAdaptive(tolerance?: number): NDArray;
     /**
      * Checks if this Bezier curve is approximately a straight line within
      * given tolerance.
-     * The check works by constructing a line between first and last control
-     * point and then finding the distance of other control points from this
-     * line. Instead of actually calculating the distance from the line, we
-     * do the check if the point lies on the line or not. This is done by
-     * substituting the [x,y] coordinates of control point, into the equation
-     * of the line. If the result is zero within the tolerance value, then
-     * the control point lies on the line. If all control points lie on the line
-     * then the curve can be considered a straight line.
      */
     isLine(tolerance?: number): boolean;
-    computeZeroCurvatureLocations(): void;
+    /**
+     * Reparameterize the bezier curve within new parametric interval.
+     * It uses the blossoming technique.
+     */
     reparam(ua: number, ub: number): void;
     aabb(): AABB;
     clone(): BezierCurve;
+    /**
+     * Split into two Bezier curves at given parametric value
+     */
+    split(uk: number): BezierCurve[];
     toString(): string;
 }
 /**
- * @hidden
+ * Rational BSpline Curve
  */
 export declare class BSplineCurve {
     degree: number;
@@ -52,28 +69,59 @@ export declare class BSplineCurve {
     knots: NDArray;
     weights?: NDArray;
     constructor(degree: number, cpoints: NDArray, knots: NDArray, weights?: NDArray);
+    /**
+     * Determines how many dimension the curve occupies based on shape of
+     * Control points array
+     */
     readonly dimension: number;
+    /**
+     * Convert 2D control points to 3D
+     */
+    to3D(): void;
     /**
      * Split the curve at given parameter value and return two bspline
      * curves. The two curves put together will exactly represent the
      * original curve.
      */
     split(uk: number): BSplineCurve[];
+    /**
+     * Replace the knots of this BSplineCurve with new knots
+     */
     setKnots(knots: NDArray): void;
+    /**
+     * Set the knot at given index in the knot vector
+     */
     setKnot(index: number, knot: number): void;
+    /**
+     * Set the weight at given index
+     */
     setWeight(index: number, weight: number): void;
     /**
-     * Is this Rational BSpline Curve
+     * Is this Rational BSpline Curve. Determined based on whether weights
+     * were specified while constructing this BSplineCurve
      */
     isRational(): boolean;
     /**
      * Evaluate basis function derivatives upto n'th
      */
-    evaluateBasisDerivatives(span: number, n: number, t: number): NDArray;
-    evaluateBasis(span: number, t: number): number[];
-    findSpan(t: number): number;
-    protected getTermDenominator(span: number, N: number[]): number;
+    private evaluateBasisDerivatives(span, n, t);
+    private evaluateBasis(span, t);
+    private findSpan(t);
+    private getTermDenominator(span, N);
+    /**
+     * Tesselate basis functions uniformly at given resolution
+     */
     tessellateBasis(resolution?: number): NDArray;
+    private static tessBSpline(bcrv, tolerance);
+    /**
+     * Tessellate this BSplineCurve adaptively within given tolerance of error
+     */
+    tessellateAdaptive(tolerance?: number): NDArray;
+    /**
+     * Checks if this Bezier curve is approximately a straight line within
+     * given tolerance.
+     */
+    isLine(tolerance?: number): boolean;
     /**
      * Inserts knot un in the knot vector r-times
      * Algorithm A5.1 from "The NURBS Book"
@@ -96,20 +144,29 @@ export declare class BSplineCurve {
      * See http://www.bluemathsoftware.com/pages/nurbs/funalgo
      */
     decompose(): BezierCurve[];
+    /**
+     * Evaluate the BSplineCurve at given parameter value
+     * If `tess` parameter is provided then the evaluated value is
+     * placed in the `tess` array at index `tessidx`. Otherwise the single
+     * euclidean point is returned.
+     */
     evaluate(t: number, tess?: NDArray, tessidx?: number): NDArray | null;
+    /**
+     * Evaluate the derivative of BSplineCurve at given parameter value
+     * If `tess` parameter is provided then the evaluated value is
+     * placed in the `tess` array at index `tessidx`. Otherwise the single
+     * euclidean point is returned.
+     */
     evaluateDerivative(t: number, d: number, tess?: NDArray, tessidx?: number): NDArray | null;
+    /**
+     * Tessellate the BSplineCurve uniformly at given resolution
+     */
     tessellate(resolution?: number): NDArray;
+    /**
+     * Tessellate derivatives of BSplineCurve uniformly at given resolution
+     */
     tessellateDerivatives(resolution: number | undefined, d: number): NDArray;
     clone(): BSplineCurve;
     aabb(): AABB;
     toString(): string;
-}
-export declare class LineSegment extends BSplineCurve {
-    constructor(from: number[], to: number[]);
-}
-export declare class CircleArc extends BSplineCurve {
-    constructor(coordsys: CoordSystem, radius: number, start: number, end: number);
-}
-export declare class Circle extends CircleArc {
-    constructor(coord: CoordSystem, radius: number);
 }

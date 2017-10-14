@@ -62,4 +62,17 @@ declare function planeFrom3Points(A: NDArray, B: NDArray, C: NDArray): number[];
  * If there is no intersection null will be returned
  */
 declare function intersectLineSegLineSeg3D(p1: number[], p2: number[], p3: number[], p4: number[]): null | number[];
-export { bernstein, findSpan, getBasisFunction, getBasisFunctionDerivatives, blossom, planeFrom3Points, intersectLineSegLineSeg3D };
+/**
+ * The check works by constructing a line between first and last control
+ * point and then finding the distance of other control points from this
+ * line. Instead of actually calculating the distance from the line, we
+ * do the check if the point lies on the line or not. This is done by
+ * substituting the [x,y] coordinates of control point, into the equation
+ * of the line. If the result is zero within the tolerance value, then
+ * the control point lies on the line. If all control points lie on the line
+ * then the curve can be considered a straight line.
+ * @param points Array of points in 2D coord
+ * @param tolerance Tolerance within which a group of points is co-linear
+ */
+declare function arePointsColinear(points: NDArray, tolerance: number): boolean;
+export { bernstein, findSpan, getBasisFunction, getBasisFunctionDerivatives, blossom, planeFrom3Points, intersectLineSegLineSeg3D, arePointsColinear };
