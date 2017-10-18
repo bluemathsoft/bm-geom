@@ -5,11 +5,11 @@ Geometry submodule of BlueMath.
 
 [![NPM package](https://img.shields.io/npm/v/@bluemath/geom.svg)](https://www.npmjs.com/package/@bluemath/geom)
 &#8226;
-[Docs](/bm/geom/docs/index.html)
+[Docs](http://www.bluemathsoftware.com/bm/geom/docs/index.html)
 &#8226;
-[Tests](bm/geom/test/index.html)
+[Tests](http://www.bluemathsoftware.com/bm/geom/test/index.html)
 &#8226;
-[Playground](bm/geom/playground/index.html)
+[Playground](http://www.bluemathsoftware.com/bm/geom/playground/index.html)
 
 
 * Implementation of basic NURBS primitives
