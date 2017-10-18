@@ -7,6 +7,8 @@
   "scripts": {
     "start" : "http-server -p8008 -c-1",
     "build-test": "webpack --config webpack.test.config.js",
+    "deploy-test": "cp ./build/bluemath-geom-test.js ../bluemathsoft.github.io/bm/geom/test/",
+    "deploy-playground": "cp ./build/bluemath-geom-playground.js ../bluemathsoft.github.io/bm/geom/playground/",
     "watch-test": "webpack --watch --config webpack.test.config.js",
     "build-visual": "webpack --config webpack.visual.config.js",
     "watch-visual": "webpack --watch --config webpack.visual.config.js",
