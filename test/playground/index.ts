@@ -2,20 +2,17 @@
 
 Copyright (C) 2017 Jayesh Salvi, Blue Math Software Inc.
 
-This file is part of bluemath.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-bluemath is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-bluemath is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with bluemath. If not, see <http://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 */
 
@@ -24,49 +21,7 @@ require('select2');
 
 import {DATA} from './pgdata'
 
-/*
-function doPlot(plotDiv:HTMLElement,width=600,height=600) {
-  let layout:any = {
-    showlegend : false
-  };
-  let RANGE = [0,25];
-  let margin = 0.0;
-
-  if(width < height) { // Portrait - Vertical stack
-    layout.yaxis = { range:RANGE, domain:[0,0.5-margin] };
-    layout.yaxis2 = { range:RANGE, domain:[0.5+margin,1] };
-  } else { // Landscape - Horizontal stack
-    layout.xaxis = { range:RANGE, domain:[0,0.5-margin] };
-    layout.xaxis2 = { range:RANGE, domain:[0.5+margin,1] };
-    layout.yaxis2 = { range:RANGE, anchor : 'x2' };
-  }
-  layout.margin = {
-    t:0,
-    b:0,
-    l:0,
-    r:0
-  }
-  plotDiv.style.width = width+'px';
-  plotDiv.style.height = height+'px';
-
-	Plotly.newPlot(plotDiv, [
-      {
-        x: [1, 2, 3, 4, 5],
-        y: [1, 2, 4, 3, 16],
-        xaxis : 'x1',
-        yaxis : 'y1'
-      },
-      {
-        x: [1, 2, 3, 4, 5],
-        y: [1, 20, 4, 8, 16],
-        xaxis : 'x2',
-        yaxis : 'y2'
-      }
-    ], layout
-  );
-
-}
-*/
+let DATA_MAP:any = {};
 
 import {GeometryAdapter, ActionAdapter} from './adapter'
 
@@ -80,12 +35,7 @@ $(document).ready(function () {
   document.body.appendChild(plotDiv);
   plotDiv.style.width = '600px';
   plotDiv.style.height = '600px';
-    
 
-
-  let urlmatch = /#([\d\w-]+)$/.exec(window.location.href);
-
-  let DATA_MAP:any = {};
   for(let i=0; i<DATA.length; i++) {
     let entry = DATA[i];
     for(let node of entry.objects) {
@@ -114,11 +64,23 @@ $(document).ready(function () {
     width : '50%'
   });
 
+  let anchorPattern = /#([\d\w-]+)$/;
+  let getParamPattern = /\?(\w+)=(.*)$/;
+
   let curChoice = null;
-  if(urlmatch) {
-    curChoice = urlmatch[1];
+  if(anchorPattern.test(window.location.href)) {
+    let urlmatch = anchorPattern.exec(window.location.href);
+    curChoice = urlmatch![1];
     $('#pg-selector').val(''+curChoice);
     $('#pg-selector').trigger('change');
+  } else if(getParamPattern.test(window.location.href)) {
+    let key = getParamPattern.exec(window.location.href)![1];
+    let value = getParamPattern.exec(window.location.href)![2];
+    if(key === 'json') {
+      let data = JSON.parse(atob(value));
+      loadData(data,plotDiv);
+      $(".select2").remove();
+    }
   } else {
     curChoice = $('#pg-selector:selected').val();
   }
@@ -134,21 +96,17 @@ $(document).ready(function () {
   if(typeof curChoice === 'string') {
     let data = DATA_MAP[curChoice];
     if(data) {
-      if(data.type === 'Action') {
-        plotDiv.style.height = '800px';
-        new ActionAdapter(plotDiv, data, DATA_MAP, nameToKey);
-      } else {
-        plotDiv.style.height = '500px';
-        new GeometryAdapter(plotDiv, data, DATA_MAP, nameToKey);
-      }
+      loadData(data,plotDiv);
     }
   }
-
-  /*
-  doPlot(plotDiv,window.innerWidth-50, window.innerHeight-50);
-
-  $(window).resize(function () {
-    doPlot(plotDiv,window.innerWidth-50, window.innerHeight-50);
-  });
-  */
 });
+
+function loadData(data:any, plotDiv:HTMLElement) {
+  if(data.type === 'Action') {
+    plotDiv.style.height = '800px';
+    new ActionAdapter(plotDiv, data, DATA_MAP, nameToKey);
+  } else {
+    plotDiv.style.height = '500px';
+    new GeometryAdapter(plotDiv, data, DATA_MAP, nameToKey);
+  }
+}
