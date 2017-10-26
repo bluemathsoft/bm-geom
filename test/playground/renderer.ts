@@ -188,7 +188,7 @@ export class Renderer {
     }
   }
 
-  render2D(traces:any,range?:{x:number[],y:number[]}) {
+  render2D(traces:any,range?:{x:number[],y:number[]},options?:any) {
     if(range) {
       this.plotlyLayout.xaxis.range = range.x;
       this.plotlyLayout.yaxis.range = range.y;
@@ -199,7 +199,7 @@ export class Renderer {
         this.plotlyLayout.yaxis2.range = range.y;
       }
     }
-    Plotly.newPlot(this.div, traces, this.plotlyLayout);
+    Plotly.newPlot(this.div, traces, this.plotlyLayout,options);
   }
 
   render3D(arrtess:TessFormat3D[]) {

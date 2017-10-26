@@ -174,7 +174,8 @@ export class GeometryAdapter {
 
   constructor(div:HTMLElement, geomdata:any,
     DATA_MAP:any,
-    nameToKey:(s:string)=>string)
+    nameToKey:(s:string)=>string,
+    options?:any)
   {
     let geom = buildGeometry(
       geomdata.object, geomdata.type, DATA_MAP, nameToKey);
@@ -193,7 +194,8 @@ export class GeometryAdapter {
         }]);
       } else {
         this.rndr.render2D(
-          genBezierPlotTraces(<BezierCurve>geom),computeRange([geom]));
+          genBezierPlotTraces(<BezierCurve>geom),computeRange([geom]),
+          options);
       }
       break;
     case 'BSplineCurve':
@@ -208,7 +210,8 @@ export class GeometryAdapter {
         }]);
       } else {
         this.rndr.render2D(
-          genBSplinePlotTraces(<BSplineCurve>geom), computeRange([geom]));
+          genBSplinePlotTraces(<BSplineCurve>geom), computeRange([geom]),
+          options);
       }
       break;
     case 'BezSurf':
@@ -259,7 +262,8 @@ export class ActionAdapter {
 
   constructor(div:HTMLElement, data:any,
     DATA_MAP:any,
-    nameToKey:(s:string)=>string)
+    nameToKey:(s:string)=>string,
+    options?:any)
   {
     let aobject = data.object;
     let igeomdata = DATA_MAP[nameToKey(aobject.input)];
@@ -275,7 +279,7 @@ export class ActionAdapter {
         ...genBezierPlotTraces(<BezierCurve>geom,['x1','y1']),
         ...genBezierPlotTraces(<BezierCurve>left,['x2','y2']),
         ...genBezierPlotTraces(<BezierCurve>right,['x2','y2']),
-      ],computeRange([geom]));
+      ],computeRange([geom]),options);
       break;
     case 'insert_knot_curve':
       {
@@ -285,7 +289,7 @@ export class ActionAdapter {
         rndr.render2D([
           ...genBSplinePlotTraces(<BSplineCurve>geom,['x1','y1']),
           ...genBSplinePlotTraces(<BSplineCurve>result,['x2','y2']),
-        ],computeRange([geom]));
+        ],computeRange([geom]),options);
       }
       break;
     case 'refine_knot_curve':
@@ -295,7 +299,7 @@ export class ActionAdapter {
         rndr.render2D([
           ...genBSplinePlotTraces(<BSplineCurve>geom,['x1','y1']),
           ...genBSplinePlotTraces(<BSplineCurve>result,['x2','y2']),
-        ],computeRange([geom]));
+        ],computeRange([geom]),options);
       }
       break;
     case 'decompose_curve':
@@ -307,7 +311,7 @@ export class ActionAdapter {
             return total.concat(
               genBezierPlotTraces(<BezierCurve>cursor,['x2','y2']));
           },[]),
-        ],computeRange([geom]));
+        ],computeRange([geom]),options);
       }
       break;
     case 'insert_knot_surf':

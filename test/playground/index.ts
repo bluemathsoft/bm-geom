@@ -78,7 +78,7 @@ $(document).ready(function () {
     let value = getParamPattern.exec(window.location.href)![2];
     if(key === 'json') {
       let data = JSON.parse(atob(value));
-      loadData(data,plotDiv);
+      loadData(data,plotDiv,{displayModeBar:false});
       $(".select2").remove();
     }
   } else {
@@ -96,17 +96,17 @@ $(document).ready(function () {
   if(typeof curChoice === 'string') {
     let data = DATA_MAP[curChoice];
     if(data) {
-      loadData(data,plotDiv);
+      loadData(data,plotDiv,{displayModeBar:true});
     }
   }
 });
 
-function loadData(data:any, plotDiv:HTMLElement) {
+function loadData(data:any, plotDiv:HTMLElement, options?:any) {
   if(data.type === 'Action') {
     plotDiv.style.height = '800px';
-    new ActionAdapter(plotDiv, data, DATA_MAP, nameToKey);
+    new ActionAdapter(plotDiv, data, DATA_MAP, nameToKey,options);
   } else {
     plotDiv.style.height = '500px';
-    new GeometryAdapter(plotDiv, data, DATA_MAP, nameToKey);
+    new GeometryAdapter(plotDiv, data, DATA_MAP, nameToKey,options);
   }
 }
