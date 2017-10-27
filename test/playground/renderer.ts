@@ -16,11 +16,11 @@ limitations under the License.
 
 */
 
-import * as Plotly from 'plotly.js/lib/core'
 import * as THREE from 'three'
 import {OrbitControls} from 'three-orbitcontrols-ts'
 import {TypedArray} from '@bluemath/common'
 
+declare let Plotly:any;
 
 export interface TessFormat3D {
   points? : Array<number[]>;

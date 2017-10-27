@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "start" : "http-server -p8008 -c-1",
+    "start": "http-server -p8008 -c-1",
     "build-test": "webpack --config webpack.test.config.js",
     "deploy-test": "cp ./build/bluemath-geom-test.js ../bluemathsoft.github.io/bm/geom/test/",
     "deploy-playground": "cp ./build/bluemath-geom-playground.js ../bluemathsoft.github.io/bm/geom/playground/",
@@ -41,7 +41,6 @@
     "awesome-typescript-loader": "^3.2.3",
     "http-server": "^0.10.0",
     "jquery": "^3.2.1",
-    "plotly.js": "^1.30.1",
     "select2": "^4.0.3",
     "source-map-loader": "^0.2.1",
     "three": "^0.87.1",
